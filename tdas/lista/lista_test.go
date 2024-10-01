@@ -191,7 +191,7 @@ func TestDistintosTiposDatos(t *testing.T) {
 
 /*------------------ TEST PARA ITERADORES LISTA  -------------------------*/
 
-/*------------------↓ TEST PARA ITERADOR EXTERNO LISTA ↓-------------------------*/
+/*------------------ TEST PARA ITERADOR EXTERNO LISTA -------------------------*/
 
 // TestIteradorExternoInsertarPrincipio corrobora que al insertar un elemento en la posición en la que se crea el iterador, efectivamente se inserta al principio.
 func TestIteradorExternoInsertarPrincipio(t *testing.T) {
@@ -214,7 +214,7 @@ func TestIteradorExternoInsertarAlFinal(t *testing.T) {
 	for iter.HaySiguiente() {
 		iter.Siguiente()
 	}
-	iter.Insertar(4) //🤓☝
+	iter.Insertar(4)
 	require.Equal(t, lista.VerUltimo(), 4, "ERROR: Deberia devolver %d", 4)
 
 	//Vemos que se comporte igual que al insertar al final
@@ -371,7 +371,7 @@ func TestIteradorExternoVolumen(t *testing.T) {
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.VerActual() }, "ERROR: Deberia lanzar panic'")
 }
 
-/*------------------ ↓TEST PARA ITERADOR INTERNO LISTA↓ -------------------------*/
+/*------------------ TEST PARA ITERADOR INTERNO LISTA -------------------------*/
 
 // TestIteradorInternoVolumen cuenta la cantidad de numeros pares en una lista con MUCHOS elementos
 func TestIteradorInternoVolumen(t *testing.T) {
