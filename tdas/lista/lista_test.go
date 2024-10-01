@@ -7,7 +7,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const CANTIDAD_VOLUMEN = 2418
+const (
+	CANTIDAD_VOLUMEN_LISTA    = 2418
+	CANTIDAD_VOLUMEN_ITERADOR = 10000
+)
 
 /*------------------ TEST PARA LISTA -------------------------*/
 
@@ -69,12 +72,12 @@ func TestInsertarEliminar(t *testing.T) {
 func TestVolumen(t *testing.T) {
 	// Agregar varios elementos al principio y borrar del primero
 	lista := TDALista.CrearListaEnlazada[int]()
-	for i := 1; i <= CANTIDAD_VOLUMEN; i++ {
+	for i := 1; i <= CANTIDAD_VOLUMEN_LISTA; i++ {
 		lista.InsertarPrimero(i)
 		require.Equal(t, i, lista.Largo(), "ERROR: Al agregar un nuevo elemento el largo deberia ser %d", i)
 	}
 
-	for i := CANTIDAD_VOLUMEN; i >= 1; i-- {
+	for i := CANTIDAD_VOLUMEN_LISTA; i >= 1; i-- {
 		require.Equal(t, i, lista.Largo(), "ERROR: El largo de la lista debe ser %d", i)
 		require.Equal(t, i, lista.BorrarPrimero(), "ERROR: BorrarPrimero deberia devolver el numero %d", i)
 		require.Equal(t, i-1, lista.Largo(), "ERROR: El largo de la lista deberia ser %d", i-1)
@@ -83,29 +86,29 @@ func TestVolumen(t *testing.T) {
 	require.True(t, lista.EstaVacia(), "Deberia devolver True, ya que la lista deberia estar vacia")
 
 	// Agregar varios elementos al final y borrar del primero
-	for i := 1; i <= CANTIDAD_VOLUMEN; i++ {
+	for i := 1; i <= CANTIDAD_VOLUMEN_LISTA; i++ {
 		lista.InsertarUltimo(i)
 		require.Equal(t, i, lista.Largo(), "ERROR: El largo de la lista deberia ser %d", i)
 	}
-	for i := CANTIDAD_VOLUMEN; i >= 1; i-- {
+	for i := CANTIDAD_VOLUMEN_LISTA; i >= 1; i-- {
 		require.Equal(t, i, lista.Largo(), "ERROR: El largo de la lista debe ser %d", i)
-		require.Equal(t, CANTIDAD_VOLUMEN+1-i, lista.BorrarPrimero(), "ERROR: Al borrar el primer elemento deberia devolver el %d", CANTIDAD_VOLUMEN+1-i)
+		require.Equal(t, CANTIDAD_VOLUMEN_LISTA+1-i, lista.BorrarPrimero(), "ERROR: Al borrar el primer elemento deberia devolver el %d", CANTIDAD_VOLUMEN_LISTA+1-i)
 		require.Equal(t, i-1, lista.Largo(), "ERROR: El largo de la lista deberia ser %d", i-1)
 	}
 	require.True(t, lista.EstaVacia(), "Deberia devolver True, ya que la lista deberia estar vacia")
 
 	// Agregar varios elementos al principio y final y borrar del principio
-	for i := 1; i <= CANTIDAD_VOLUMEN; i++ {
+	for i := 1; i <= CANTIDAD_VOLUMEN_LISTA; i++ {
 		lista.InsertarUltimo(i)
 		lista.InsertarPrimero(i)
 		require.Equal(t, i*2, lista.Largo(), "ERROR: El largo deberia ser %d", i*2)
 	}
 
-	for i := CANTIDAD_VOLUMEN; i >= 1; i-- {
+	for i := CANTIDAD_VOLUMEN_LISTA; i >= 1; i-- {
 		require.Equal(t, i, lista.BorrarPrimero(), "ERROR: Deberia devolver %d", i)
 	}
 
-	for i := 1; i <= CANTIDAD_VOLUMEN; i++ {
+	for i := 1; i <= CANTIDAD_VOLUMEN_LISTA; i++ {
 		require.Equal(t, i, lista.BorrarPrimero(), "ERROR: Deberia devolver %d", i)
 	}
 
@@ -186,17 +189,9 @@ func TestDistintosTiposDatos(t *testing.T) {
 	require.Equal(t, 0, listaFloats.Largo(), "ERROR: deberia devolver '0'")
 }
 
-/*------------------ TEST PARA ITERADOR EXTERNO LISTA -------------------------*/
-/*
-[X] 1-Al insertar un elemento en la posición en la que se crea el iterador, efectivamente se inserta al principio.
-[X] 2-Insertar un elemento cuando el iterador está al final efectivamente es equivalente a insertar al final.
-[X] 3-Insertar un elemento en el medio se hace en la posición correcta.
-[X] 4-Al remover el elemento cuando se crea el iterador, cambia el primer elemento de la lista.
-[X] 5-Remover el último elemento con el iterador cambia el último de la lista.
-[X] 6-Verificar que al remover un elemento del medio, este no está.
-[ ] 7-Otros casos borde que pueden encontrarse al utilizar el iterador externo.
-[ ] 8-Casos del iterador interno, incluyendo casos con corte (la función visitar devuelve false eventualmente).
-*/
+/*------------------ TEST PARA ITERADORES LISTA  -------------------------*/
+
+/*------------------↓ TEST PARA ITERADOR EXTERNO LISTA ↓-------------------------*/
 
 // TestIteradorExternoInsertarPrincipio corrobora que al insertar un elemento en la posición en la que se crea el iterador, efectivamente se inserta al principio.
 func TestIteradorExternoInsertarPrincipio(t *testing.T) {
@@ -296,10 +291,132 @@ func TestIteradorExternoBorrarMedio(t *testing.T) {
 	require.Equal(t, 1, iterador.VerActual(), "ERROR: Deberia devolver %d", 1)
 }
 
-func TestIteradorListaVacia(t *testing.T) {
+// TestIteradorExternoListaVacia corrobora que efecturar las operaciones Borrar, Siguiente, VerActual sobre una lista vacia lanza Panic
+func TestIteradorExternoListaVacia(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
 	iterador := lista.Iterador()
-	require.PanicsWithValue(t, "El iterador ya termino de iterar", func() { iterador.Borrar() }, "ERROR: Deberia lanzar panic'")
-	require.PanicsWithValue(t, "El iterador ya termino de iterar", func() { iterador.Siguiente() }, "ERROR: Deberia lanzar panic'")
-	require.PanicsWithValue(t, "El iterador ya termino de iterar", func() { iterador.VerActual() }, "ERROR: Deberia lanzar panic'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.Borrar() }, "ERROR: Deberia lanzar panic'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.Siguiente() }, "ERROR: Deberia lanzar panic'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.VerActual() }, "ERROR: Deberia lanzar panic'")
+}
+
+// TestIteradorExternoVaciarLista itera la lista hasta vaciarla y que se comporte como tal
+func TestIteradorExternoVaciarLista(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	lista.InsertarUltimo(1)
+	lista.InsertarUltimo(2)
+	lista.InsertarUltimo(3)
+	lista.InsertarUltimo(4)
+	lista.InsertarUltimo(5)
+	require.Equal(t, 5, lista.Largo(), "ERROR: deberia devolver '5'")
+	iterador := lista.Iterador()
+	for i := 1; i <= 5; i++ {
+		require.Equal(t, i, iterador.Borrar(), "ERROR: Deberia devolver %d", i)
+	}
+	require.Equal(t, 0, lista.Largo(), "ERROR: deberia devolver '0'")
+	require.True(t, lista.EstaVacia(), "Deberia devolver True, ya que la lista deberia estar vacia")
+	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerPrimero() }, "ERROR: deberia devolver 'La lista esta vacia'")
+	require.PanicsWithValue(t, "La lista esta vacia", func() { lista.VerUltimo() }, "ERROR: deberia devolver 'La lista esta vacia'")
+
+}
+
+// TestIteradorExternoDatos inserta distintos tipos de datos con el iterador externo
+func TestIteradorExternoDatos(t *testing.T) {
+	//Con Cadena
+	listaString := TDALista.CrearListaEnlazada[string]()
+	iterador := listaString.Iterador()
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.Borrar() }, "ERROR: deberia devolver 'La lista esta vacia'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.VerActual() }, "ERROR: deberia devolver 'La lista esta vacia'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.Siguiente() }, "ERROR: deberia devolver 'La lista esta vacia'")
+	iterador.Insertar("A")
+	iterador.Insertar("B")
+	iterador.Insertar("M")
+	require.Equal(t, 3, listaString.Largo(), 3)
+	require.Equal(t, iterador.VerActual(), listaString.VerPrimero(), "El valor actual del iterador deberia ser A")
+	require.True(t, iterador.HaySiguiente())
+	iterador.Siguiente()
+	require.Equal(t, "B", iterador.VerActual(), "El valor actual del iterador deberia ser B")
+
+	//Con Floats
+	listaFloat := TDALista.CrearListaEnlazada[float64]()
+	iteradorFloat := listaFloat.Iterador()
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iteradorFloat.Borrar() }, "ERROR: deberia devolver 'La lista esta vacia'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iteradorFloat.VerActual() }, "ERROR: deberia devolver 'La lista esta vacia'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iteradorFloat.Siguiente() }, "ERROR: deberia devolver 'La lista esta vacia'")
+	iteradorFloat.Insertar(4.1)
+	iteradorFloat.Insertar(4.2)
+	iteradorFloat.Insertar(4.4)
+	require.Equal(t, 3, listaString.Largo(), 3)
+	require.Equal(t, iteradorFloat.VerActual(), listaFloat.VerPrimero(), "ERROR: El valor actual del iterador deberia ser 4.1")
+	require.True(t, iteradorFloat.HaySiguiente())
+	iteradorFloat.Siguiente()
+	require.Equal(t, 4.2, iteradorFloat.VerActual(), "ERROR: El valor actual del iterador deberia ser %f", 4.2)
+}
+
+// TestIteradorExternoVolumen corrobora que se puede insertar y borrar elementos en grandes volumenes con el iterador
+func TestIteradorExternoVolumen(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	iterador := lista.Iterador()
+
+	for i := 1; i <= CANTIDAD_VOLUMEN_ITERADOR; i++ {
+		iterador.Insertar(i)
+		require.Equal(t, i, lista.VerPrimero(), "ERROR: Deberia devolver %d", i)
+	}
+	for i := CANTIDAD_VOLUMEN_ITERADOR; i >= 1; i-- {
+		require.Equal(t, i, iterador.Borrar())
+	}
+	require.True(t, lista.EstaVacia())
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.Borrar() }, "ERROR: Deberia lanzar panic'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.Siguiente() }, "ERROR: Deberia lanzar panic'")
+	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iterador.VerActual() }, "ERROR: Deberia lanzar panic'")
+}
+
+/*------------------ ↓TEST PARA ITERADOR INTERNO LISTA↓ -------------------------*/
+
+// TestIteradorInternoVolumen cuenta la cantidad de numeros pares en una lista con MUCHOS elementos
+func TestIteradorInternoVolumen(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	for i := 0; i < CANTIDAD_VOLUMEN_ITERADOR; i++ {
+		lista.InsertarPrimero(i)
+	}
+	contador := 0
+	lista.Iterar(func(numero int) bool {
+		if numero%2 == 0 {
+			contador++
+			return true
+		}
+		return true
+	})
+	require.Equal(t, CANTIDAD_VOLUMEN_ITERADOR, lista.Largo(), "ERROR: Deberia devolver %d", CANTIDAD_VOLUMEN_ITERADOR)
+	require.Equal(t, CANTIDAD_VOLUMEN_ITERADOR/2, contador, "ERROR: Deberia contar %d numeros pares", CANTIDAD_VOLUMEN_ITERADOR/2)
+}
+
+// TestIteradorInternoSuma chequea que el iterador interno devuelva el valor correcto
+func TestIteradorInternoSuma(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	lista.InsertarPrimero(4)
+	lista.InsertarPrimero(2)
+	lista.InsertarUltimo(18)
+	lista.InsertarUltimo(24)
+	lista.InsertarPrimero(42)
+	contador := 0
+	lista.Iterar(func(numero int) bool {
+		contador += numero
+		return true
+	})
+	require.Equal(t, 90, contador, "ERROR: Deberia contar %d numeros pares", 90)
+}
+
+// TestIteradorInternoCorte corrobora que el iterador se corta cuando la funcion devuelve false
+func TestIteradorInternoCorte(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	contador := 0
+	for i := 0; i <= 20; i++ {
+		lista.InsertarPrimero(i)
+	}
+	lista.Iterar(func(numero int) bool {
+		contador++
+		return numero != 11
+	})
+	require.Equal(t, 10, contador, "Deberia devolver 10")
 }

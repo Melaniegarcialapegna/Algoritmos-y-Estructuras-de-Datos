@@ -1,19 +1,19 @@
 package lista
 
-//Documentar!!
-
-// Struct nodo contiene un valor y un puntero al siguiente nodo
+// nodo representa un nodo de la lista enlazada.
 type nodo[T any] struct {
 	dato T
 	sig  *nodo[T]
 }
 
+// listaEnlazada es la implementacion de la interfaz lista utilizando nodos.
 type listaEnlazada[T any] struct {
 	primero *nodo[T]
 	ultimo  *nodo[T]
 	largo   int
 }
 
+// crearNodo crea y devuelve un puntero a un nuevo nodo.
 func crearNodo[T any](valor T) *nodo[T] {
 	nodo := new(nodo[T])
 	nodo.dato = valor
@@ -21,7 +21,7 @@ func crearNodo[T any](valor T) *nodo[T] {
 	return nodo
 }
 
-// TDA lista
+// CrearListaEnlazada crea y devuelve una lista enlazada vacia.
 func CrearListaEnlazada[T any]() Lista[T] {
 	lista := new(listaEnlazada[T])
 	lista.primero = nil
@@ -98,19 +98,19 @@ func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
 	}
 }
 
-// TDA iteradorListaEnlazada
-type iteradorListaEnlazada[T any] struct {
-	lista    *listaEnlazada[T]
-	actual   *nodo[T]
-	anterior *nodo[T]
-}
-
 func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] {
 	nuevoIterador := new(iteradorListaEnlazada[T])
 	nuevoIterador.lista = lista
 	nuevoIterador.actual = lista.primero
 	nuevoIterador.anterior = nil
 	return nuevoIterador
+}
+
+// iteradorListaEnlazada representa un iterador para una lista enlazada.
+type iteradorListaEnlazada[T any] struct {
+	lista    *listaEnlazada[T]
+	actual   *nodo[T]
+	anterior *nodo[T]
 }
 
 func (iterador *iteradorListaEnlazada[T]) VerActual() T {
@@ -166,7 +166,6 @@ func (iterador *iteradorListaEnlazada[T]) Borrar() T {
 			iterador.lista.ultimo = iterador.anterior
 		}
 	}
-
 	//Caso general
 	iterador.actual = iterador.actual.sig
 	iterador.lista.largo--
