@@ -391,7 +391,7 @@ func TestIteradorInternoVolumen(t *testing.T) {
 	require.Equal(t, CANTIDAD_VOLUMEN_ITERADOR/2, contador, "ERROR: Deberia contar %d numeros pares", CANTIDAD_VOLUMEN_ITERADOR/2)
 }
 
-// TestIteradorInternoSuma chequea que el iterador interno devuelva el valor correcto
+// TestIteradorInternoSuma chequea que el iterador interno sume los elementos correctamente
 func TestIteradorInternoSuma(t *testing.T) {
 	lista := TDALista.CrearListaEnlazada[int]()
 	lista.InsertarPrimero(4)
@@ -399,12 +399,12 @@ func TestIteradorInternoSuma(t *testing.T) {
 	lista.InsertarUltimo(18)
 	lista.InsertarUltimo(24)
 	lista.InsertarPrimero(42)
-	contador := 0
+	suma := 0
 	lista.Iterar(func(numero int) bool {
-		contador += numero
+		suma += numero
 		return true
 	})
-	require.Equal(t, 90, contador, "ERROR: Deberia contar %d numeros pares", 90)
+	require.Equal(t, 90, suma, "ERROR: Deberia devolver %d", 90)
 }
 
 // TestIteradorInternoCorte corrobora que el iterador se corta cuando la funcion devuelve false
@@ -418,5 +418,46 @@ func TestIteradorInternoCorte(t *testing.T) {
 		contador++
 		return numero != 11
 	})
-	require.Equal(t, 10, contador, "Deberia devolver 10")
+	require.Equal(t, 10, contador, "ERROR: Deberia devolver %d", 10)
+}
+
+// TestIteradorInternoMultiplicacion verifica que el iterador interno multiplique los elementos correctamente
+func TestIteradorInternoMultiplicacion(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	lista.InsertarPrimero(1)
+	lista.InsertarPrimero(2)
+	lista.InsertarPrimero(3)
+	lista.InsertarPrimero(4)
+	producto := 1
+	lista.Iterar(func(numero int) bool {
+		producto *= numero
+		return true
+	})
+
+	require.Equal(t, 24, producto, "ERROR: Deberia devolver el producto %d", 24)
+}
+
+// TestIteradorInternoListaVacia verifica que el iterador interno maneje correctamente una lista vacia
+func TestIteradorInternoListaVacia(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	contador := 0
+	lista.Iterar(func(numero int) bool {
+		contador++
+		return true
+	})
+
+	require.Equal(t, 0, contador, "ERROR: La lista vacía debería devolver un contador de %d", 0)
+}
+
+// TestIteradorInternoListaUnElemento verifica que el iterador interno funcione con una lista de un solo elemento
+func TestIteradorInternoListaUnElemento(t *testing.T) {
+	lista := TDALista.CrearListaEnlazada[int]()
+	lista.InsertarPrimero(4)
+	contador := 0
+	lista.Iterar(func(numero int) bool {
+		contador++
+		return true
+	})
+
+	require.Equal(t, 1, contador, "ERROR: la lista con un elemento debería devolver un contador de %d", 1)
 }
