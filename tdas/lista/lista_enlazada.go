@@ -99,7 +99,7 @@ type iteradorListaEnlazada[T any] struct {
 }
 
 func (iterador *iteradorListaEnlazada[T]) VerActual() T {
-	if iterador.actual == nil {
+	if !iterador.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
 	return iterador.actual.dato
