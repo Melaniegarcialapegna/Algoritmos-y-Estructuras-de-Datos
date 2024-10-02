@@ -1,33 +1,26 @@
 package lista
 
-// nodo representa un nodo de la lista enlazada.
-type nodo[T any] struct {
+// nodoLista representa un nodo de la lista enlazada.
+type nodoLista[T any] struct {
 	dato T
-	sig  *nodo[T]
+	sig  *nodoLista[T]
 }
 
 // listaEnlazada es la implementacion de la interfaz lista utilizando nodos.
 type listaEnlazada[T any] struct {
-	primero *nodo[T]
-	ultimo  *nodo[T]
+	primero *nodoLista[T]
+	ultimo  *nodoLista[T]
 	largo   int
 }
 
 // crearNodo crea y devuelve un puntero a un nuevo nodo.
-func crearNodo[T any](valor T) *nodo[T] {
-	nodo := new(nodo[T])
-	nodo.dato = valor
-	nodo.sig = nil
-	return nodo
+func crearNodo[T any](valor T, siguiente *nodoLista[T]) *nodoLista[T] {
+	return &nodoLista[T]{dato: valor, sig: siguiente}
 }
 
 // CrearListaEnlazada crea y devuelve una lista enlazada vacia.
 func CrearListaEnlazada[T any]() Lista[T] {
-	lista := new(listaEnlazada[T])
-	lista.primero = nil
-	lista.ultimo = nil
-	lista.largo = 0
-	return lista
+	return &listaEnlazada[T]{primero: nil, ultimo: nil, largo: 0}
 }
 
 func (lista *listaEnlazada[T]) EstaVacia() bool {
@@ -35,18 +28,16 @@ func (lista *listaEnlazada[T]) EstaVacia() bool {
 }
 
 func (lista *listaEnlazada[T]) InsertarPrimero(valor T) {
-	nuevoNodo := crearNodo(valor)
+	nuevoNodo := crearNodo(valor, lista.primero)
 	if lista.EstaVacia() {
 		lista.ultimo = nuevoNodo
-	} else {
-		nuevoNodo.sig = lista.primero
 	}
 	lista.primero = nuevoNodo
 	lista.largo++
 }
 
 func (lista *listaEnlazada[T]) InsertarUltimo(valor T) {
-	nuevoNodo := crearNodo(valor)
+	nuevoNodo := crearNodo(valor, nil)
 	if lista.EstaVacia() {
 		lista.primero = nuevoNodo
 	} else {
@@ -89,28 +80,22 @@ func (lista *listaEnlazada[T]) Largo() int {
 
 func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
 	actual := lista.primero
-	for actual != nil {
-		continuar := visitar(actual.dato)
-		if !continuar {
-			break
-		}
+	continuar := true
+	for actual != nil && continuar {
+		continuar = visitar(actual.dato)
 		actual = actual.sig
 	}
 }
 
 func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] {
-	nuevoIterador := new(iteradorListaEnlazada[T])
-	nuevoIterador.lista = lista
-	nuevoIterador.actual = lista.primero
-	nuevoIterador.anterior = nil
-	return nuevoIterador
+	return &iteradorListaEnlazada[T]{lista: lista, actual: lista.primero, anterior: nil}
 }
 
 // iteradorListaEnlazada representa un iterador para una lista enlazada.
 type iteradorListaEnlazada[T any] struct {
 	lista    *listaEnlazada[T]
-	actual   *nodo[T]
-	anterior *nodo[T]
+	actual   *nodoLista[T]
+	anterior *nodoLista[T]
 }
 
 func (iterador *iteradorListaEnlazada[T]) VerActual() T {
@@ -133,14 +118,13 @@ func (iterador *iteradorListaEnlazada[T]) Siguiente() {
 }
 
 func (iterador *iteradorListaEnlazada[T]) Insertar(valor T) {
-	nuevoNodo := crearNodo(valor)
+	nuevoNodo := crearNodo(valor, iterador.actual)
 
 	if iterador.anterior == nil {
 		iterador.lista.primero = nuevoNodo
 	} else {
 		iterador.anterior.sig = nuevoNodo
 	}
-	nuevoNodo.sig = iterador.actual
 	if !iterador.HaySiguiente() {
 		iterador.lista.ultimo = nuevoNodo
 	}
