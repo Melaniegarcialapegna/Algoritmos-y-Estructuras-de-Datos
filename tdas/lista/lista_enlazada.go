@@ -79,12 +79,8 @@ func (lista *listaEnlazada[T]) Largo() int {
 }
 
 func (lista *listaEnlazada[T]) Iterar(visitar func(T) bool) {
-	actual := lista.primero
-	continuar := true
-	for actual != nil && continuar {
-		continuar = visitar(actual.dato)
-		actual = actual.sig
-	}
+	for actual := lista.primero; actual != nil; actual = actual.prox {
+		if !visitar(actual.dato) break
 }
 
 func (lista *listaEnlazada[T]) Iterador() IteradorLista[T] {
