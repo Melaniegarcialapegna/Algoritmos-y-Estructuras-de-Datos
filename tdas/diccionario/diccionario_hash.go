@@ -46,7 +46,12 @@ func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 		hash.redimensionar(hash.tam * FACTOR_REDIMENSION)
 	}
 
+	//NOS FALTA VER SI LA CLAVE YA EXISTE -> REEMPLAZAR EL DATO
 	for hash.tabla[posicion].estado == OCUPADO {
+		if hash.tabla[posicion].clave == clave { //Si la clave ya existe -> reem dato
+			hash.tabla[posicion].dato = dato
+			return
+		}
 		if posicion == hash.tam-1 {
 			posicion = PRIMERA_POSICION - 1
 		}
@@ -56,6 +61,17 @@ func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 	hash.tabla[posicion].dato = dato
 	hash.tabla[posicion].estado = OCUPADO
 	hash.cantidad++
+
+	// for hash.tabla[posicion].estado == OCUPADO {
+	// 	if posicion == hash.tam-1 {
+	// 		posicion = PRIMERA_POSICION - 1
+	// 	}
+	// 	posicion++
+	// }
+	// hash.tabla[posicion].clave = clave
+	// hash.tabla[posicion].dato = dato
+	// hash.tabla[posicion].estado = OCUPADO
+	// hash.cantidad++
 }
 
 func (hash *hashCerrado[K, V]) Pertenece(clave K) bool {
@@ -77,6 +93,7 @@ func (hash *hashCerrado[K, V]) Borrar(clave K) V {
 	}
 	valor := hash.tabla[posicion].dato
 	hash.tabla[posicion].estado = BORRADO
+	hash.cantidad-- //Descontar 1
 	return valor
 }
 
@@ -105,7 +122,8 @@ type iteradorHashCerrado[K comparable, V any] struct {
 }
 
 func (iterador *iteradorHashCerrado[K, V]) HaySiguiente() bool {
-	return iterador.posicionActual != iterador.hash.tam
+	return iterador.posicionActual != iterador.hash.tam //CAMBIAR((???)) CREO QUE SERIA < y no != ??
+	//Si esta en ocupado damos true y sino falso (fallan pruebas??)
 }
 func (iterador *iteradorHashCerrado[K, V]) VerActual() (K, V) {
 	if !iterador.HaySiguiente() {
@@ -138,14 +156,15 @@ func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 }
 
 func (hash *hashCerrado[K, V]) factorCarga() float32 {
-	return (1 + float32(hash.cantidad) + float32(hash.borrados)) / float32(hash.tam)
+	return float32(hash.cantidad) / float32(hash.tam) //Los borrados los podemos sobrescribir! contarian como vacios(?)
 }
 
 func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
 	bytes := convertirABytes(clave)
 	posicion := int(Hash32(bytes)) % hash.tam
 	for hash.tabla[posicion].estado != VACIO {
-		if hash.tabla[posicion].clave == clave {
+		if hash.tabla[posicion].estado == OCUPADO && hash.tabla[posicion].clave == clave { //Le estabamos intentando sacar la clave a algo que tal vez estaba borrado
+			//hash.tabla[posicion].clave == clave {
 			return posicion
 		}
 		if posicion == hash.tam-1 {
