@@ -38,13 +38,14 @@ func CrearHash[K comparable, V any]() Diccionario[K, V] {
 }
 
 func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
-	bytes := convertirABytes(clave)
-	posicion := int(CityHash32(bytes)) % hash.tam
 
 	// Checkear si es necesario redimensionar la tabla
 	if hash.factorCarga() > FACTOR_CARGA_MAXIMO {
 		hash.redimensionar(hash.tam * FACTOR_REDIMENSION)
 	}
+
+	bytes := convertirABytes(clave)
+	posicion := int(CityHash32(bytes)) % hash.tam
 
 	//NOS FALTA VER SI LA CLAVE YA EXISTE -> REEMPLAZAR EL DATO
 	for hash.tabla[posicion].estado == OCUPADO {
@@ -82,7 +83,8 @@ func (hash *hashCerrado[K, V]) Borrar(clave K) V {
 	}
 	valor := hash.tabla[posicion].dato
 	hash.tabla[posicion].estado = BORRADO
-	hash.cantidad-- //Descontar 1
+	hash.cantidad--
+	hash.borrados++
 	return valor
 }
 
@@ -111,33 +113,26 @@ type iteradorHashCerrado[K comparable, V any] struct {
 }
 
 func (iterador *iteradorHashCerrado[K, V]) HaySiguiente() bool {
-	return iterador.posicionActual < iterador.hash.tam && iterador.posicionActual != -1
+	for iterador.posicionActual < iterador.hash.tam {
+		if iterador.hash.tabla[iterador.posicionActual].estado == OCUPADO {
+			return true
+		}
+		iterador.posicionActual++
+	}
+	return false
 }
 
 func (iterador *iteradorHashCerrado[K, V]) VerActual() (K, V) {
 	if !iterador.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
-	if iterador.posicionActual == 0 {
-		iterador.Siguiente()
-	}
-	if iterador.posicionActual == -1 {
-		panic("El iterador termino de iterar")
-	}
-	celda := iterador.hash.tabla[iterador.posicionActual]
-	return celda.clave, celda.dato
+	return iterador.hash.tabla[iterador.posicionActual].clave, iterador.hash.tabla[iterador.posicionActual].dato
 }
 
 func (iterador *iteradorHashCerrado[K, V]) Siguiente() {
-	if !iterador.HaySiguiente() {
+	iterador.posicionActual++
+	if iterador.posicionActual > iterador.hash.tam {
 		panic("El iterador termino de iterar")
-	}
-	celda := iterador.hash.tabla[iterador.posicionActual]
-	for celda.estado != OCUPADO && iterador.HaySiguiente() {
-		iterador.posicionActual++
-	}
-	if celda.estado != OCUPADO {
-		iterador.posicionActual = -1
 	}
 }
 
@@ -149,6 +144,8 @@ func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 	tablaAnterior := hash.tabla
 	hash.tabla = make([]celdaHash[K, V], tam)
 	hash.tam = tam
+	hash.cantidad = CANTIDAD_INICIAL
+	hash.borrados = BORRADOS_INICIAL
 	for _, elem := range tablaAnterior {
 		if elem.estado == OCUPADO {
 			hash.Guardar(elem.clave, elem.dato)
@@ -157,14 +154,14 @@ func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 }
 
 func (hash *hashCerrado[K, V]) factorCarga() float32 {
-	return float32(hash.cantidad) / float32(hash.tam) //Los borrados los podemos sobrescribir! contarian como vacios(?)
+	return (float32(hash.cantidad) + float32(hash.borrados)) / float32(hash.tam)
 }
 
 func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
 	bytes := convertirABytes(clave)
 	posicion := int(CityHash32(bytes)) % hash.tam
 	for hash.tabla[posicion].estado != VACIO {
-		if hash.tabla[posicion].estado == OCUPADO && hash.tabla[posicion].clave == clave { //Le estabamos intentando sacar la clave a algo que tal vez estaba borrado
+		if hash.tabla[posicion].estado == OCUPADO && hash.tabla[posicion].clave == clave {
 			return posicion
 		}
 		if posicion == hash.tam-1 {
