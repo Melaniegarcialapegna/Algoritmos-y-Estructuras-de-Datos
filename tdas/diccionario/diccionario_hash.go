@@ -39,7 +39,7 @@ func CrearHash[K comparable, V any]() Diccionario[K, V] {
 
 func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 	bytes := convertirABytes(clave)
-	posicion := int(Hash32(bytes)) % hash.tam
+	posicion := int(CityHash32(bytes)) % hash.tam
 
 	// Checkear si es necesario redimensionar la tabla
 	if hash.factorCarga() > FACTOR_CARGA_MAXIMO {
@@ -61,17 +61,6 @@ func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 	hash.tabla[posicion].dato = dato
 	hash.tabla[posicion].estado = OCUPADO
 	hash.cantidad++
-
-	// for hash.tabla[posicion].estado == OCUPADO {
-	// 	if posicion == hash.tam-1 {
-	// 		posicion = PRIMERA_POSICION - 1
-	// 	}
-	// 	posicion++
-	// }
-	// hash.tabla[posicion].clave = clave
-	// hash.tabla[posicion].dato = dato
-	// hash.tabla[posicion].estado = OCUPADO
-	// hash.cantidad++
 }
 
 func (hash *hashCerrado[K, V]) Pertenece(clave K) bool {
@@ -122,22 +111,34 @@ type iteradorHashCerrado[K comparable, V any] struct {
 }
 
 func (iterador *iteradorHashCerrado[K, V]) HaySiguiente() bool {
-	return iterador.posicionActual != iterador.hash.tam //CAMBIAR((???)) CREO QUE SERIA < y no != ??
-	//Si esta en ocupado damos true y sino falso (fallan pruebas??)
+	return iterador.posicionActual < iterador.hash.tam && iterador.posicionActual != -1
 }
+
 func (iterador *iteradorHashCerrado[K, V]) VerActual() (K, V) {
 	if !iterador.HaySiguiente() {
-		panic("La clave no pertenece al diccionario")
+		panic("El iterador termino de iterar")
+	}
+	if iterador.posicionActual == 0 {
+		iterador.Siguiente()
+	}
+	if iterador.posicionActual == -1 {
+		panic("El iterador termino de iterar")
 	}
 	celda := iterador.hash.tabla[iterador.posicionActual]
 	return celda.clave, celda.dato
-
 }
+
 func (iterador *iteradorHashCerrado[K, V]) Siguiente() {
 	if !iterador.HaySiguiente() {
-		panic("La clave no pertenece al diccionario")
+		panic("El iterador termino de iterar")
 	}
-	iterador.posicionActual++
+	celda := iterador.hash.tabla[iterador.posicionActual]
+	for celda.estado != OCUPADO && iterador.HaySiguiente() {
+		iterador.posicionActual++
+	}
+	if celda.estado != OCUPADO {
+		iterador.posicionActual = -1
+	}
 }
 
 func convertirABytes[K comparable](clave K) []byte {
@@ -161,10 +162,9 @@ func (hash *hashCerrado[K, V]) factorCarga() float32 {
 
 func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
 	bytes := convertirABytes(clave)
-	posicion := int(Hash32(bytes)) % hash.tam
+	posicion := int(CityHash32(bytes)) % hash.tam
 	for hash.tabla[posicion].estado != VACIO {
 		if hash.tabla[posicion].estado == OCUPADO && hash.tabla[posicion].clave == clave { //Le estabamos intentando sacar la clave a algo que tal vez estaba borrado
-			//hash.tabla[posicion].clave == clave {
 			return posicion
 		}
 		if posicion == hash.tam-1 {

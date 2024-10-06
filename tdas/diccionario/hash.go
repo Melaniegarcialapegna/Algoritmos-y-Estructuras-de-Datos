@@ -1,587 +1,175 @@
-// Package spooky implements Bob Jenkins' Spooky hash
-// http://www.burtleburtle.net/bob/hash/spooky.html
-// Public domain, like the original
 package diccionario
 
-import "encoding/binary"
+//https://github.com/tenfyzhong/cityhash/blob/master/city32.go
 
-// number of uint64's in internal state
-const sc_numVars = 12
+import (
+	"encoding/binary"
+)
 
-// size of the internal state
-const sc_blockSize = sc_numVars * 8
+// Some primes between 2^63 and 2^64 for various uses.
+const (
+	k0 uint64 = 0xc3a5c85c97cb3127
+	k1 uint64 = 0xb492b66fbe98f273
+	k2 uint64 = 0x9ae16a3b2f90404f
+)
 
-// size of buffer of unhashed data, in bytes
-const sc_bufSize = sc_blockSize
+// Magic numbers for 32-bit hashing. Copied from Murmur3.
+const (
+	c1 uint32 = 0xcc9e2d51
+	c2 uint32 = 0x1b873593
+)
 
-const sc_const = uint64(0xdeadbeefdeadbeef)
-
-func rot64(x uint64, k int) uint64 {
-	return (x << uint(k)) | (x >> (64 - uint(k)))
+func bswap32(x uint32) uint32 {
+	return ((x & 0xff000000) >> 24) |
+		((x & 0x00ff0000) >> 8) |
+		((x & 0x0000ff00) << 8) |
+		((x & 0x000000ff) << 24)
 }
 
-func shortMix(h0, h1, h2, h3 uint64) (uint64, uint64, uint64, uint64) {
-	h2 = rot64(h2, 50)
-	h2 += h3
-	h0 ^= h2
-	h3 = rot64(h3, 52)
-	h3 += h0
-	h1 ^= h3
-	h0 = rot64(h0, 30)
-	h0 += h1
-	h2 ^= h0
-	h1 = rot64(h1, 41)
-	h1 += h2
-	h3 ^= h1
-	h2 = rot64(h2, 54)
-	h2 += h3
-	h0 ^= h2
-	h3 = rot64(h3, 48)
-	h3 += h0
-	h1 ^= h3
-	h0 = rot64(h0, 38)
-	h0 += h1
-	h2 ^= h0
-	h1 = rot64(h1, 37)
-	h1 += h2
-	h3 ^= h1
-	h2 = rot64(h2, 62)
-	h2 += h3
-	h0 ^= h2
-	h3 = rot64(h3, 34)
-	h3 += h0
-	h1 ^= h3
-	h0 = rot64(h0, 5)
-	h0 += h1
-	h2 ^= h0
-	h1 = rot64(h1, 36)
-	h1 += h2
-	h3 ^= h1
-	return h0, h1, h2, h3
+func fetch32(p []byte) uint32 {
+	return binary.LittleEndian.Uint32(p)
 }
 
-func shortEnd(h0, h1, h2, h3 uint64) (uint64, uint64, uint64, uint64) {
-	h3 ^= h2
-	h2 = rot64(h2, 15)
-	h3 += h2
-	h0 ^= h3
-	h3 = rot64(h3, 52)
-	h0 += h3
-	h1 ^= h0
-	h0 = rot64(h0, 26)
-	h1 += h0
-	h2 ^= h1
-	h1 = rot64(h1, 51)
-	h2 += h1
-	h3 ^= h2
-	h2 = rot64(h2, 28)
-	h3 += h2
-	h0 ^= h3
-	h3 = rot64(h3, 9)
-	h0 += h3
-	h1 ^= h0
-	h0 = rot64(h0, 47)
-	h1 += h0
-	h2 ^= h1
-	h1 = rot64(h1, 54)
-	h2 += h1
-	h3 ^= h2
-	h2 = rot64(h2, 32)
-	h3 += h2
-	h0 ^= h3
-	h3 = rot64(h3, 25)
-	h0 += h3
-	h1 ^= h0
-	h0 = rot64(h0, 63)
-	h1 += h0
-	return h0, h1, h2, h3
-}
-
-func Short(message []byte, hash1, hash2 *uint64) {
-
-	u := message
-
-	length := len(u)
-
-	remainder := length % 32
-	a := *hash1
-	b := *hash2
-	c := sc_const
-	d := sc_const
-
-	if length > 15 {
-
-		// handle all complete sets of 32 bytes
-		for len(u) >= 32 {
-			c += binary.LittleEndian.Uint64(u)
-			d += binary.LittleEndian.Uint64(u[8:])
-			a, b, c, d = shortMix(a, b, c, d)
-			a += binary.LittleEndian.Uint64(u[16:])
-			b += binary.LittleEndian.Uint64(u[24:])
-			u = u[32:]
-		}
-
-		//Handle the case of 16+ remaining bytes.
-		if remainder >= 16 {
-			c += binary.LittleEndian.Uint64(u)
-			d += binary.LittleEndian.Uint64(u[8:])
-			a, b, c, d = shortMix(a, b, c, d)
-			u = u[16:]
-			remainder -= 16
-		}
-	}
-
-	// Handle the last 0..15 bytes, and its length
-	d += uint64(length) << 56
-	switch remainder {
-	case 15:
-		d += uint64(u[14]) << 48
-		fallthrough
-	case 14:
-		d += uint64(u[13]) << 40
-		fallthrough
-	case 13:
-		d += uint64(u[12]) << 32
-		fallthrough
-	case 12:
-		d += uint64(binary.LittleEndian.Uint32(u[8:]))
-		c += binary.LittleEndian.Uint64(u[0:])
-		break
-	case 11:
-		d += uint64(u[10]) << 16
-		fallthrough
-	case 10:
-		d += uint64(u[9]) << 8
-		fallthrough
-	case 9:
-		d += uint64(u[8])
-		fallthrough
-	case 8:
-		c += binary.LittleEndian.Uint64(u[0:])
-		break
-	case 7:
-		c += uint64(u[6]) << 48
-		fallthrough
-	case 6:
-		c += uint64(u[5]) << 40
-		fallthrough
-	case 5:
-		c += uint64(u[4]) << 32
-		fallthrough
-	case 4:
-		c += uint64(binary.LittleEndian.Uint32(u[0:]))
-		break
-	case 3:
-		c += uint64(u[2]) << 16
-		fallthrough
-	case 2:
-		c += uint64(u[1]) << 8
-		fallthrough
-	case 1:
-		c += uint64(u[0])
-		break
-	case 0:
-		c += sc_const
-		d += sc_const
-	}
-	a, b, c, d = shortEnd(a, b, c, d)
-	*hash1 = a
-	*hash2 = b
-}
-
-func mix(data []byte, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11 uint64) (uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64) {
-	s0 += binary.LittleEndian.Uint64(data[0*8:])
-	s2 ^= s10
-	s11 ^= s0
-	s0 = rot64(s0, 11)
-	s11 += s1
-	s1 += binary.LittleEndian.Uint64(data[1*8:])
-	s3 ^= s11
-	s0 ^= s1
-	s1 = rot64(s1, 32)
-	s0 += s2
-	s2 += binary.LittleEndian.Uint64(data[2*8:])
-	s4 ^= s0
-	s1 ^= s2
-	s2 = rot64(s2, 43)
-	s1 += s3
-	s3 += binary.LittleEndian.Uint64(data[3*8:])
-	s5 ^= s1
-	s2 ^= s3
-	s3 = rot64(s3, 31)
-	s2 += s4
-	s4 += binary.LittleEndian.Uint64(data[4*8:])
-	s6 ^= s2
-	s3 ^= s4
-	s4 = rot64(s4, 17)
-	s3 += s5
-	s5 += binary.LittleEndian.Uint64(data[5*8:])
-	s7 ^= s3
-	s4 ^= s5
-	s5 = rot64(s5, 28)
-	s4 += s6
-	s6 += binary.LittleEndian.Uint64(data[6*8:])
-	s8 ^= s4
-	s5 ^= s6
-	s6 = rot64(s6, 39)
-	s5 += s7
-	s7 += binary.LittleEndian.Uint64(data[7*8:])
-	s9 ^= s5
-	s6 ^= s7
-	s7 = rot64(s7, 57)
-	s6 += s8
-	s8 += binary.LittleEndian.Uint64(data[8*8:])
-	s10 ^= s6
-	s7 ^= s8
-	s8 = rot64(s8, 55)
-	s7 += s9
-	s9 += binary.LittleEndian.Uint64(data[9*8:])
-	s11 ^= s7
-	s8 ^= s9
-	s9 = rot64(s9, 54)
-	s8 += s10
-	s10 += binary.LittleEndian.Uint64(data[10*8:])
-	s0 ^= s8
-	s9 ^= s10
-	s10 = rot64(s10, 22)
-	s9 += s11
-	s11 += binary.LittleEndian.Uint64(data[11*8:])
-	s1 ^= s9
-	s10 ^= s11
-	s11 = rot64(s11, 46)
-	s10 += s0
-	return s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11
-}
-
-func endPartial(h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 uint64) (uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64) {
-	h11 += h1
-	h2 ^= h11
-	h1 = rot64(h1, 44)
-	h0 += h2
-	h3 ^= h0
-	h2 = rot64(h2, 15)
-	h1 += h3
-	h4 ^= h1
-	h3 = rot64(h3, 34)
-	h2 += h4
-	h5 ^= h2
-	h4 = rot64(h4, 21)
-	h3 += h5
-	h6 ^= h3
-	h5 = rot64(h5, 38)
-	h4 += h6
-	h7 ^= h4
-	h6 = rot64(h6, 33)
-	h5 += h7
-	h8 ^= h5
-	h7 = rot64(h7, 10)
-	h6 += h8
-	h9 ^= h6
-	h8 = rot64(h8, 13)
-	h7 += h9
-	h10 ^= h7
-	h9 = rot64(h9, 38)
-	h8 += h10
-	h11 ^= h8
-	h10 = rot64(h10, 53)
-	h9 += h11
-	h0 ^= h9
-	h11 = rot64(h11, 42)
-	h10 += h0
-	h1 ^= h10
-	h0 = rot64(h0, 54)
-	return h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11
-}
-
-func end(data []uint64, h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 uint64) (uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64, uint64) {
-	h0 += data[0]
-	h1 += data[1]
-	h2 += data[2]
-	h3 += data[3]
-	h4 += data[4]
-	h5 += data[5]
-	h6 += data[6]
-	h7 += data[7]
-	h8 += data[8]
-	h9 += data[9]
-	h10 += data[10]
-	h11 += data[11]
-
-	h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 = endPartial(h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11)
-	h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 = endPartial(h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11)
-	h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 = endPartial(h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11)
-	return h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11
-}
-
-func Hash128(message []byte, hash1, hash2 *uint64) {
-
-	length := len(message)
-
-	if length < 2*sc_blockSize {
-		Short(message, hash1, hash2)
-		return
-	}
-
-	var h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 uint64
-	u := message
-
-	h0 = *hash1
-	h1 = *hash2
-	h2 = sc_const
-	h3 = *hash1
-	h4 = *hash2
-	h5 = sc_const
-	h6 = *hash1
-	h7 = *hash2
-	h8 = sc_const
-	h9 = *hash1
-	h10 = *hash2
-	h11 = sc_const
-
-	// handle all whole sc_blockSize blocks of bytes
-	for len(u) >= sc_blockSize {
-		h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 = mix(u, h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11)
-		u = u[sc_blockSize:]
-	}
-
-	remainder := len(u)
-
-	// put in the data we have left
-	var buf [sc_numVars]uint64
-	var bidx int
-	for bidx = 0; len(u) >= 8; bidx++ {
-		buf[bidx] = binary.LittleEndian.Uint64(u)
-		u = u[8:]
-	}
-
-	// we now have <1 uint64 left
-	var tmpbuf [8]uint8
-	copy(tmpbuf[:], u)
-
-	buf[bidx] = binary.LittleEndian.Uint64(tmpbuf[:])
-	bidx++
-
-	// the last byte
-	buf[sc_numVars-1] += uint64(remainder) << 56
-
-	// do some final mixing
-
-	h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 = end(buf[:], h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11)
-	*hash1 = h0
-	*hash2 = h1
-}
-
-func Hash64(message []byte) uint64 {
-	return Hash64Seed(message, 0)
-}
-
-func Hash64Seed(message []byte, hash1 uint64) uint64 {
-	hash2 := uint64(0)
-	Hash128(message, &hash1, &hash2)
-	return hash1
-}
-
-func Hash32(message []byte) uint32 {
-	return Hash32Seed(message, 0)
-}
-
-func Hash32Seed(message []byte, hash1 uint32) uint32 {
-	h1 := uint64(hash1)
-	h2 := uint64(0)
-	Hash128(message, &h1, &h2)
-	return uint32(h1)
-}
-
-type Spooky struct {
-	m_data       [sc_bufSize]byte   // unhashed data, for partial messages
-	m_state      [sc_numVars]uint64 // internal state of the hash
-	m_length     int
-	m_remainder  uint8
-	seed1, seed2 uint64
-}
-
-func New(seed1, seed2 uint64) *Spooky {
-	h := &Spooky{}
-	h.seed1 = seed1
-	h.seed2 = seed2
-	h.m_state[0] = seed1
-	h.m_state[1] = seed2
+// A 32-bit to 32-bit integer hash copied from Murmr3.
+func fmix(h uint32) uint32 {
+	h ^= h >> 16
+	h *= 0x85ebca6b
+	h ^= h >> 13
+	h *= 0xc2b2ae35
+	h ^= h >> 16
 	return h
 }
 
-func (s *Spooky) Reset() {
-	s.m_length = 0
-	s.m_remainder = 0
-	s.m_state[0] = s.seed1
-	s.m_state[1] = s.seed2
+func rotate32(val uint32, shift int) uint32 {
+	// Avoid shifting by 32: doing so yields and undefined result.
+	if shift == 0 {
+		return val
+	}
+	return (val >> uint32(shift)) | (val << (32 - uint32(shift)))
 }
 
-func (s *Spooky) BlockSize() int { return 96 }
-func (s *Spooky) Size() int      { return 16 }
-
-func (s *Spooky) Sum32() uint32 {
-
-	var b [16]byte
-
-	s.Sum(b[:0])
-
-	h := binary.LittleEndian.Uint64(b[:])
-
-	return uint32(h)
+func permute3(a, b, c uint32) (uint32, uint32, uint32) {
+	return c, a, b
 }
 
-func (s *Spooky) Sum64() uint64 {
-
-	var b [16]byte
-
-	s.Sum(b[:0])
-
-	return binary.LittleEndian.Uint64(b[:])
+func mur(a, h uint32) uint32 {
+	// Helper from Murmur3 for combining two 32-bit values.
+	a *= c1
+	a = rotate32(a, 17)
+	a *= c2
+	h ^= a
+	h = rotate32(h, 19)
+	return h*5 + 0xe6546b64
 }
 
-func (s *Spooky) Sum(b []byte) []byte {
-
-	// init the variables
-	if s.m_length < sc_bufSize {
-		hash1 := s.m_state[0]
-		hash2 := s.m_state[1]
-		Short(s.m_data[:s.m_length], &hash1, &hash2)
-
-		var b1 [16]byte
-		binary.LittleEndian.PutUint64(b1[:], hash1)
-		binary.LittleEndian.PutUint64(b1[8:], hash2)
-		return append(b, b1[:]...)
-	}
-
-	data := s.m_data[:s.m_remainder]
-	remainder := s.m_remainder
-
-	h0 := s.m_state[0]
-	h1 := s.m_state[1]
-	h2 := s.m_state[2]
-	h3 := s.m_state[3]
-	h4 := s.m_state[4]
-	h5 := s.m_state[5]
-	h6 := s.m_state[6]
-	h7 := s.m_state[7]
-	h8 := s.m_state[8]
-	h9 := s.m_state[9]
-	h10 := s.m_state[10]
-	h11 := s.m_state[11]
-
-	// mix in the last partial block, and the length mod sc_blockSize
-
-	var buf [sc_numVars]uint64
-
-	// put in the data we have left
-	var bidx int
-	for bidx = 0; len(data) >= 8; bidx++ {
-		buf[bidx] = binary.LittleEndian.Uint64(data)
-		data = data[8:]
-	}
-
-	// we now have <1 uint64 left
-	var tmpbuf [8]uint8
-	copy(tmpbuf[:], data)
-
-	buf[bidx] = binary.LittleEndian.Uint64(tmpbuf[:])
-	bidx++
-
-	// the last byte
-	buf[sc_numVars-1] += uint64(remainder) << 56
-
-	// do some final mixing
-
-	h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 = end(buf[:], h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11)
-
-	var b1 [16]byte
-	binary.LittleEndian.PutUint64(b1[:], h0)
-	binary.LittleEndian.PutUint64(b1[8:], h1)
-
-	return append(b, b1[:]...)
+func hash32Len13to24(s []byte, length int) uint32 {
+	a := fetch32(s[(length>>1)-4:])
+	b := fetch32(s[4:])
+	c := fetch32(s[length-8:])
+	d := fetch32(s[length>>1:])
+	e := fetch32(s)
+	f := fetch32(s[length-4:])
+	h := uint32(length)
+	return fmix(mur(f, mur(e, mur(d, mur(c, mur(b, mur(a, h)))))))
 }
 
-func (s *Spooky) Write(message []byte) (int, error) {
-	length := len(message)
+func hash32Len0to4(s []byte, length int) uint32 {
+	b := uint32(0)
+	c := uint32(9)
+	for _, v := range s[:length] {
+		b = uint32(int64(b)*int64(c1) + int64(int8(v)))
+		c ^= b
+	}
+	return fmix(mur(b, mur(uint32(length), c)))
+}
 
-	var h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 uint64
-	newLength := length + int(s.m_remainder)
+func hash32Len5to12(s []byte, length int) uint32 {
+	a := uint32(length)
+	b := uint32(length) * 5
+	c := uint32(9)
+	d := b
+	a += fetch32(s)
+	b += fetch32(s[length-4:])
+	c += fetch32(s[(length>>1)&4:])
+	return fmix(mur(c, mur(b, mur(a, d))))
+}
 
-	u := message
-
-	// Is this message fragment too short?  If it is, stuff it away.
-	if newLength < sc_bufSize {
-		copy(s.m_data[s.m_remainder:], message)
-		s.m_length += length
-		s.m_remainder = uint8(newLength)
-		return length, nil
+// CityHash32 return 32-bit hash.
+func CityHash32(s []byte) uint32 {
+	length := len(s)
+	if length <= 4 {
+		return hash32Len0to4(s, length)
+	} else if length <= 12 {
+		return hash32Len5to12(s, length)
+	} else if length <= 24 {
+		return hash32Len13to24(s, length)
 	}
 
-	// init the variables
-	if s.m_length < sc_bufSize {
-		h0 = s.m_state[0]
-		h1 = s.m_state[1]
-		h2 = sc_const
-		h3 = s.m_state[0]
-		h4 = s.m_state[1]
-		h5 = sc_const
-		h6 = s.m_state[0]
-		h7 = s.m_state[1]
-		h8 = sc_const
-		h9 = s.m_state[0]
-		h10 = s.m_state[1]
-		h11 = sc_const
-	} else {
-		h0 = s.m_state[0]
-		h1 = s.m_state[1]
-		h2 = s.m_state[2]
-		h3 = s.m_state[3]
-		h4 = s.m_state[4]
-		h5 = s.m_state[5]
-		h6 = s.m_state[6]
-		h7 = s.m_state[7]
-		h8 = s.m_state[8]
-		h9 = s.m_state[9]
-		h10 = s.m_state[10]
-		h11 = s.m_state[11]
+	// len > 24
+	h := uint32(length)
+	g := c1 * uint32(length)
+	f := g
+	a0 := rotate32(fetch32(s[length-4:])*c1, 17) * c2
+	a1 := rotate32(fetch32(s[length-8:])*c1, 17) * c2
+	a2 := rotate32(fetch32(s[length-16:])*c1, 17) * c2
+	a3 := rotate32(fetch32(s[length-12:])*c1, 17) * c2
+	a4 := rotate32(fetch32(s[length-20:])*c1, 17) * c2
+	h ^= a0
+	h = rotate32(h, 19)
+	h = h*5 + 0xe6546b64
+	h ^= a2
+	h = rotate32(h, 19)
+	h = h*5 + 0xe6546b64
+	g ^= a1
+	g = rotate32(g, 19)
+	g = g*5 + 0xe6546b64
+	g ^= a3
+	g = rotate32(g, 19)
+	g = g*5 + 0xe6546b64
+	f += a4
+	f = rotate32(f, 19)
+	f = f*5 + 0xe6546b64
+	iters := (length - 1) / 20
+	for {
+		a0 := rotate32(fetch32(s)*c1, 17) * c2
+		a1 := fetch32(s[4:])
+		a2 := rotate32(fetch32(s[8:])*c1, 17) * c2
+		a3 := rotate32(fetch32(s[12:])*c1, 17) * c2
+		a4 := fetch32(s[16:])
+		h ^= a0
+		h = rotate32(h, 18)
+		h = h*5 + 0xe6546b64
+		f += a1
+		f = rotate32(f, 19)
+		f *= c1
+		g += a2
+		g = rotate32(g, 18)
+		g = g*5 + 0xe6546b64
+		h ^= a3 + a1
+		h = rotate32(h, 19)
+		h = h*5 + 0xe6546b64
+		g ^= a4
+		g = bswap32(g) * 5
+		h += a4 * 5
+		h = bswap32(h)
+		f += a0
+		f, h, g = permute3(f, h, g)
+		s = s[20:]
+
+		iters--
+		if iters == 0 {
+			break
+		}
 	}
-	s.m_length += length
-
-	// if we've got anything stuffed away, use it now
-	if s.m_remainder != 0 {
-		prefix := sc_bufSize - s.m_remainder
-		copy(s.m_data[s.m_remainder:], message)
-
-		h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 = mix(s.m_data[:], h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11)
-
-		u = message[prefix:]
-	} else {
-		u = message
-	}
-
-	// handle all whole blocks of sc_blockSize bytes
-	for len(u) >= sc_blockSize {
-		h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11 = mix(u, h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11)
-		u = u[sc_blockSize:]
-	}
-
-	// stuff away the last few bytes
-	s.m_remainder = uint8(len(u))
-	copy(s.m_data[:], u)
-
-	// stuff away the variables
-	s.m_state[0] = h0
-	s.m_state[1] = h1
-	s.m_state[2] = h2
-	s.m_state[3] = h3
-	s.m_state[4] = h4
-	s.m_state[5] = h5
-	s.m_state[6] = h6
-	s.m_state[7] = h7
-	s.m_state[8] = h8
-	s.m_state[9] = h9
-	s.m_state[10] = h10
-	s.m_state[11] = h11
-
-	return length, nil
+	g = rotate32(g, 11) * c1
+	g = rotate32(g, 17) * c1
+	f = rotate32(f, 11) * c1
+	f = rotate32(f, 17) * c1
+	h = rotate32(h+g, 19)
+	h = h*5 + 0xe6546b64
+	h = rotate32(h, 17) * c1
+	h = rotate32(h+f, 19)
+	h = h*5 + 0xe6546b64
+	h = rotate32(h, 17) * c1
+	return h
 }
