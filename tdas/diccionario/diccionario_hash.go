@@ -16,6 +16,7 @@ const (
 	POSICION_INICIAL    = 0
 	PRIMERA_POSICION    = 0
 	TAM_INICIAL         = 10
+	CANTIDAD_MINIMA     = 1
 )
 
 type estado int
@@ -91,7 +92,7 @@ func (hash *hashCerrado[K, V]) Borrar(clave K) V {
 	hash.cantidad--
 	hash.borrados++
 
-	if hash.factorCarga() < FACTOR_CARGA_MINIMO {
+	if hash.factorCarga2() < FACTOR_CARGA_MINIMO && CANTIDAD_MINIMA < hash.cantidad {
 		hash.redimensionar(hash.tam / FACTOR_REDIMENSION)
 	}
 	// En caso de ser necesario, redimesiona la tabla de hash
@@ -171,6 +172,11 @@ func (hash *hashCerrado[K, V]) factorCarga() float32 {
 	return (float32(hash.cantidad) + float32(hash.borrados)) / float32(hash.tam)
 }
 
+// factorCarga
+func (hash *hashCerrado[K, V]) factorCarga2() float32 {
+	return float32(hash.cantidad) / float32(hash.tam)
+}
+
 // buscarElemento
 func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
 	bytes := convertirABytes(clave)
@@ -186,3 +192,4 @@ func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
 	}
 	return -1
 }
+
