@@ -8,23 +8,26 @@ const (
 	VACIO               = 0
 	OCUPADO             = 1
 	BORRADO             = 2
-	CANTIDAD_INICIAL    = 0
-	TAM_INICIAL         = 10
 	BORRADOS_INICIAL    = 0
-	PRIMERA_POSICION    = 0
-	FACTOR_REDIMENSION  = 3
+	CANTIDAD_INICIAL    = 0
 	FACTOR_CARGA_MAXIMO = 0.7
+	FACTOR_CARGA_MINIMO = 0.3
+	FACTOR_REDIMENSION  = 3
 	POSICION_INICIAL    = 0
+	PRIMERA_POSICION    = 0
+	TAM_INICIAL         = 10
 )
 
 type estado int
 
+// celdaHash representa una celda de una tabla de hash.
 type celdaHash[K comparable, V any] struct {
 	clave  K
 	dato   V
 	estado estado
 }
 
+// hashCerrado es la implementacion de una tabla de hash.
 type hashCerrado[K comparable, V any] struct {
 	tabla    []celdaHash[K, V]
 	cantidad int
@@ -32,6 +35,7 @@ type hashCerrado[K comparable, V any] struct {
 	borrados int
 }
 
+// CrearHash crea y devuelve un diccionario implementado con una tabla de Hash cerrada.
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
 	celdas := make([]celdaHash[K, V], TAM_INICIAL)
 	return &hashCerrado[K, V]{tabla: celdas, cantidad: CANTIDAD_INICIAL, tam: TAM_INICIAL, borrados: BORRADOS_INICIAL}
@@ -39,7 +43,7 @@ func CrearHash[K comparable, V any]() Diccionario[K, V] {
 
 func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 
-	// Checkear si es necesario redimensionar la tabla
+	// En caso de ser necesario, redimesiona la tabla de hash
 	if hash.factorCarga() > FACTOR_CARGA_MAXIMO {
 		hash.redimensionar(hash.tam * FACTOR_REDIMENSION)
 	}
@@ -47,12 +51,13 @@ func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 	bytes := convertirABytes(clave)
 	posicion := int(CityHash32(bytes)) % hash.tam
 
-	//NOS FALTA VER SI LA CLAVE YA EXISTE -> REEMPLAZAR EL DATO
 	for hash.tabla[posicion].estado == OCUPADO {
-		if hash.tabla[posicion].clave == clave { //Si la clave ya existe -> reem dato
+		//Si la clave ya existe reemplaza el dato
+		if hash.tabla[posicion].clave == clave {
 			hash.tabla[posicion].dato = dato
 			return
 		}
+		//Si llegamos a la ultima celda seguimos buscando desde la primera
 		if posicion == hash.tam-1 {
 			posicion = PRIMERA_POSICION - 1
 		}
@@ -85,6 +90,12 @@ func (hash *hashCerrado[K, V]) Borrar(clave K) V {
 	hash.tabla[posicion].estado = BORRADO
 	hash.cantidad--
 	hash.borrados++
+
+	if hash.factorCarga() < FACTOR_CARGA_MINIMO {
+		hash.redimensionar(hash.tam / FACTOR_REDIMENSION)
+	}
+	// En caso de ser necesario, redimesiona la tabla de hash
+
 	return valor
 }
 
@@ -106,7 +117,7 @@ func (hash *hashCerrado[K, V]) Iterador() IterDiccionario[K, V] {
 	return &iteradorHashCerrado[K, V]{hash: hash, posicionActual: POSICION_INICIAL}
 }
 
-// tda iterador
+// iteradorHashCerrado representa un iterador para un hash cerrado.
 type iteradorHashCerrado[K comparable, V any] struct {
 	hash           *hashCerrado[K, V]
 	posicionActual int
@@ -136,10 +147,12 @@ func (iterador *iteradorHashCerrado[K, V]) Siguiente() {
 	}
 }
 
+// convertirABytes transforma un tipo de dato genérico a un array de bytes
 func convertirABytes[K comparable](clave K) []byte {
 	return []byte(fmt.Sprintf("%v", clave))
 }
 
+// redimensionar toma la tabla actual del hash y transfiere sus elementos a una nueva tabla de mayor tamaño
 func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 	tablaAnterior := hash.tabla
 	hash.tabla = make([]celdaHash[K, V], tam)
@@ -153,10 +166,12 @@ func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 	}
 }
 
+// factorCarga
 func (hash *hashCerrado[K, V]) factorCarga() float32 {
 	return (float32(hash.cantidad) + float32(hash.borrados)) / float32(hash.tam)
 }
 
+// buscarElemento
 func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
 	bytes := convertirABytes(clave)
 	posicion := int(CityHash32(bytes)) % hash.tam
