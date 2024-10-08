@@ -11,7 +11,7 @@ const (
 	BORRADOS_INICIAL    = 0
 	CANTIDAD_INICIAL    = 0
 	FACTOR_CARGA_MAXIMO = 0.7
-	FACTOR_CARGA_MINIMO = 0.3
+	FACTOR_CARGA_MINIMO = 0.2
 	FACTOR_REDIMENSION  = 3
 	POSICION_INICIAL    = 0
 	PRIMERA_POSICION    = 0
@@ -131,7 +131,7 @@ func (iterador *iteradorHashCerrado[K, V]) HaySiguiente() bool {
 }
 
 func (iterador *iteradorHashCerrado[K, V]) VerActual() (K, V) {
-	if !iterador.proximoOcupado() {
+	if !iterador.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
 	return iterador.hash.tabla[iterador.posicionActual].clave, iterador.hash.tabla[iterador.posicionActual].dato
