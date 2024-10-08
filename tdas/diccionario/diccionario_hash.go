@@ -45,7 +45,7 @@ func CrearHash[K comparable, V any]() Diccionario[K, V] {
 func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 
 	// En caso de ser necesario, redimesiona la tabla de hash
-	if hash.factorCarga() > FACTOR_CARGA_MAXIMO {
+	if hash.factorCarga(true) > FACTOR_CARGA_MAXIMO {
 		hash.redimensionar(hash.tam * FACTOR_REDIMENSION)
 	}
 
@@ -92,7 +92,7 @@ func (hash *hashCerrado[K, V]) Borrar(clave K) V {
 	hash.cantidad--
 	hash.borrados++
 
-	if hash.factorCarga2() < FACTOR_CARGA_MINIMO && CANTIDAD_MINIMA < hash.cantidad {
+	if hash.factorCarga(false) < FACTOR_CARGA_MINIMO && CANTIDAD_MINIMA < hash.cantidad {
 		hash.redimensionar(hash.tam / FACTOR_REDIMENSION)
 	}
 	// En caso de ser necesario, redimesiona la tabla de hash
@@ -115,7 +115,9 @@ func (hash *hashCerrado[K, V]) Iterar(f func(clave K, dato V) bool) {
 }
 
 func (hash *hashCerrado[K, V]) Iterador() IterDiccionario[K, V] {
-	return &iteradorHashCerrado[K, V]{hash: hash, posicionActual: POSICION_INICIAL}
+	iterador := &iteradorHashCerrado[K, V]{hash: hash, posicionActual: POSICION_INICIAL}
+	iterador.proximoOcupado()
+	return iterador
 }
 
 // iteradorHashCerrado representa un iterador para un hash cerrado.
@@ -125,27 +127,22 @@ type iteradorHashCerrado[K comparable, V any] struct {
 }
 
 func (iterador *iteradorHashCerrado[K, V]) HaySiguiente() bool {
-	for iterador.posicionActual < iterador.hash.tam {
-		if iterador.hash.tabla[iterador.posicionActual].estado == OCUPADO {
-			return true
-		}
-		iterador.posicionActual++
-	}
-	return false
+	return iterador.posicionActual < iterador.hash.tam
 }
 
 func (iterador *iteradorHashCerrado[K, V]) VerActual() (K, V) {
-	if !iterador.HaySiguiente() {
+	if !iterador.proximoOcupado() {
 		panic("El iterador termino de iterar")
 	}
 	return iterador.hash.tabla[iterador.posicionActual].clave, iterador.hash.tabla[iterador.posicionActual].dato
 }
 
 func (iterador *iteradorHashCerrado[K, V]) Siguiente() {
-	iterador.posicionActual++
-	if iterador.posicionActual > iterador.hash.tam {
+	if !iterador.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
+	iterador.posicionActual++
+	iterador.proximoOcupado()
 }
 
 // convertirABytes transforma un tipo de dato genérico a un array de bytes
@@ -156,10 +153,13 @@ func convertirABytes[K comparable](clave K) []byte {
 // redimensionar toma la tabla actual del hash y transfiere sus elementos a una nueva tabla de mayor tamaño
 func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 	tablaAnterior := hash.tabla
+	//creamos una nueva tabla que reemplazara a la actual
 	hash.tabla = make([]celdaHash[K, V], tam)
 	hash.tam = tam
+	//reiniciamos los valores
 	hash.cantidad = CANTIDAD_INICIAL
 	hash.borrados = BORRADOS_INICIAL
+	//reubicamos los elementos en la nueva tabla
 	for _, elem := range tablaAnterior {
 		if elem.estado == OCUPADO {
 			hash.Guardar(elem.clave, elem.dato)
@@ -167,29 +167,43 @@ func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 	}
 }
 
-// factorCarga
-func (hash *hashCerrado[K, V]) factorCarga() float32 {
-	return (float32(hash.cantidad) + float32(hash.borrados)) / float32(hash.tam)
+// factorCarga calcula el factor de carga de un hash y lo devuelve como float32
+func (hash *hashCerrado[K, V]) factorCarga(contarBorrados bool) float32 {
+	numerador := float32(hash.cantidad)
+	if contarBorrados {
+		numerador += float32(hash.borrados)
+	}
+	return numerador / float32(hash.tam)
 }
 
-// factorCarga
-func (hash *hashCerrado[K, V]) factorCarga2() float32 {
-	return float32(hash.cantidad) / float32(hash.tam)
-}
-
-// buscarElemento
+// buscarElemento devuelve la posicion de una clave en una tabla de hash,en caso de no encontrarla devuelve -1
 func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
 	bytes := convertirABytes(clave)
 	posicion := int(CityHash32(bytes)) % hash.tam
+	//iteramos hasta hallar una celda que no esta vacia
 	for hash.tabla[posicion].estado != VACIO {
+		// chequeamos si encontramos la celda
 		if hash.tabla[posicion].estado == OCUPADO && hash.tabla[posicion].clave == clave {
 			return posicion
 		}
+		// en caso de estar en la ultima posicion, seguimos buscando a la primera
 		if posicion == hash.tam-1 {
 			posicion = PRIMERA_POSICION - 1
 		}
 		posicion++
 	}
+	// llegado aca, ya itero toda la tabla y no encontre un ocupado
 	return -1
 }
 
+// proximoOcupado incrementa la posicion del iterador hasta encontrar una celda ocupada y devuelve true,
+// en caso de no haber un proximo ocupado devuelve false
+func (iterador *iteradorHashCerrado[K, V]) proximoOcupado() bool {
+	for iterador.HaySiguiente() {
+		if iterador.hash.tabla[iterador.posicionActual].estado == OCUPADO {
+			return true
+		}
+		iterador.posicionActual++
+	}
+	return false
+}
