@@ -15,7 +15,7 @@ const (
 	FACTOR_REDIMENSION  = 3
 	POSICION_INICIAL    = 0
 	PRIMERA_POSICION    = 0
-	TAM_INICIAL         = 10
+	TAM_INICIAL         = 11
 	CANTIDAD_MINIMA     = 1
 )
 
@@ -115,29 +115,29 @@ func (hash *hashCerrado[K, V]) Iterar(f func(clave K, dato V) bool) {
 }
 
 func (hash *hashCerrado[K, V]) Iterador() IterDiccionario[K, V] {
-	iterador := &iteradorHashCerrado[K, V]{hash: hash, posicionActual: POSICION_INICIAL}
+	iterador := &iterHashCerrado[K, V]{hash: hash, posicionActual: POSICION_INICIAL}
 	iterador.proximoOcupado()
 	return iterador
 }
 
-// iteradorHashCerrado representa un iterador para un hash cerrado.
-type iteradorHashCerrado[K comparable, V any] struct {
+// iterHashCerrado representa un iterador para un hash cerrado.
+type iterHashCerrado[K comparable, V any] struct {
 	hash           *hashCerrado[K, V]
 	posicionActual int
 }
 
-func (iterador *iteradorHashCerrado[K, V]) HaySiguiente() bool {
+func (iterador *iterHashCerrado[K, V]) HaySiguiente() bool {
 	return iterador.posicionActual < iterador.hash.tam
 }
 
-func (iterador *iteradorHashCerrado[K, V]) VerActual() (K, V) {
+func (iterador *iterHashCerrado[K, V]) VerActual() (K, V) {
 	if !iterador.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
 	return iterador.hash.tabla[iterador.posicionActual].clave, iterador.hash.tabla[iterador.posicionActual].dato
 }
 
-func (iterador *iteradorHashCerrado[K, V]) Siguiente() {
+func (iterador *iterHashCerrado[K, V]) Siguiente() {
 	if !iterador.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
@@ -198,7 +198,7 @@ func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
 
 // proximoOcupado incrementa la posicion del iterador hasta encontrar una celda ocupada y devuelve true,
 // en caso de no haber un proximo ocupado devuelve false
-func (iterador *iteradorHashCerrado[K, V]) proximoOcupado() bool {
+func (iterador *iterHashCerrado[K, V]) proximoOcupado() bool {
 	for iterador.HaySiguiente() {
 		if iterador.hash.tabla[iterador.posicionActual].estado == OCUPADO {
 			return true
