@@ -159,6 +159,7 @@ func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 	tablaAnterior := hash.tabla
 	//creamos una nueva tabla que reemplazara a la actual
 	hash.tabla = crearTabla[K, V](tam)
+	hash.tam = tam
 	//reiniciamos los valores
 	hash.cantidad = CANTIDAD_INICIAL
 	hash.borrados = BORRADOS_INICIAL
