@@ -36,10 +36,14 @@ type hashCerrado[K comparable, V any] struct {
 	borrados int
 }
 
+// crearTabla crea y devuelve una tabla de hash cerrado
+func crearTabla[K comparable, V any](tam int) []celdaHash[K, V] {
+	return make([]celdaHash[K, V], tam)
+}
+
 // CrearHash crea y devuelve un diccionario implementado con una tabla de Hash cerrada.
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
-	celdas := make([]celdaHash[K, V], TAM_INICIAL)
-	return &hashCerrado[K, V]{tabla: celdas, cantidad: CANTIDAD_INICIAL, tam: TAM_INICIAL, borrados: BORRADOS_INICIAL}
+	return &hashCerrado[K, V]{tabla: crearTabla[K, V](TAM_INICIAL), cantidad: CANTIDAD_INICIAL, tam: TAM_INICIAL, borrados: BORRADOS_INICIAL}
 }
 
 func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
@@ -154,8 +158,7 @@ func convertirABytes[K comparable](clave K) []byte {
 func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 	tablaAnterior := hash.tabla
 	//creamos una nueva tabla que reemplazara a la actual
-	hash.tabla = make([]celdaHash[K, V], tam)
-	hash.tam = tam
+	hash.tabla = crearTabla[K, V](tam)
 	//reiniciamos los valores
 	hash.cantidad = CANTIDAD_INICIAL
 	hash.borrados = BORRADOS_INICIAL
