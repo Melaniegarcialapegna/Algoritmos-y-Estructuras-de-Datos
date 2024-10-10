@@ -8,24 +8,20 @@ const (
 	VACIO               = 0
 	OCUPADO             = 1
 	BORRADO             = 2
-	BORRADOS_INICIAL    = 0
-	CANTIDAD_INICIAL    = 0
 	FACTOR_CARGA_MAXIMO = 0.7
 	FACTOR_CARGA_MINIMO = 0.2
 	FACTOR_REDIMENSION  = 3
-	POSICION_INICIAL    = 0
-	PRIMERA_POSICION    = 0
 	TAM_INICIAL         = 11
 	CANTIDAD_MINIMA     = 1
 )
 
-type estado int
+type estadoCelda int
 
 // celdaHash representa una celda de una tabla de hash.
 type celdaHash[K comparable, V any] struct {
 	clave  K
 	dato   V
-	estado estado
+	estado estadoCelda
 }
 
 // hashCerrado es la implementacion de una tabla de hash.
@@ -43,7 +39,7 @@ func crearTabla[K comparable, V any](tam int) []celdaHash[K, V] {
 
 // CrearHash crea y devuelve un diccionario implementado con una tabla de Hash cerrada.
 func CrearHash[K comparable, V any]() Diccionario[K, V] {
-	return &hashCerrado[K, V]{tabla: crearTabla[K, V](TAM_INICIAL), cantidad: CANTIDAD_INICIAL, tam: TAM_INICIAL, borrados: BORRADOS_INICIAL}
+	return &hashCerrado[K, V]{tabla: crearTabla[K, V](TAM_INICIAL), cantidad: 0, tam: TAM_INICIAL, borrados: 0}
 }
 
 func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
@@ -53,42 +49,32 @@ func (hash *hashCerrado[K, V]) Guardar(clave K, dato V) {
 		hash.redimensionar(hash.tam * FACTOR_REDIMENSION)
 	}
 
-	bytes := convertirABytes(clave)
-	posicion := int(CityHash32(bytes)) % hash.tam
-
-	for hash.tabla[posicion].estado == OCUPADO {
-		//Si la clave ya existe reemplaza el dato
-		if hash.tabla[posicion].clave == clave {
-			hash.tabla[posicion].dato = dato
-			return
-		}
-		//Si llegamos a la ultima celda seguimos buscando desde la primera
-		if posicion == hash.tam-1 {
-			posicion = PRIMERA_POSICION - 1
-		}
-		posicion++
+	posicion, encontrado := hash.buscarElemento(clave)
+	if !encontrado {
+		hash.tabla[posicion].clave = clave
+		hash.tabla[posicion].estado = OCUPADO
+		hash.cantidad++
 	}
-	hash.tabla[posicion].clave = clave
+
 	hash.tabla[posicion].dato = dato
-	hash.tabla[posicion].estado = OCUPADO
-	hash.cantidad++
 }
 
 func (hash *hashCerrado[K, V]) Pertenece(clave K) bool {
-	return hash.buscarElemento(clave) != -1
+	_, encontrado := hash.buscarElemento(clave)
+	return encontrado
 }
 
 func (hash *hashCerrado[K, V]) Obtener(clave K) V {
-	posicion := hash.buscarElemento(clave)
-	if posicion == -1 {
+	posicion, encontrado := hash.buscarElemento(clave)
+	if !encontrado {
 		panic("La clave no pertenece al diccionario")
 	}
 	return hash.tabla[posicion].dato
 }
 
 func (hash *hashCerrado[K, V]) Borrar(clave K) V {
-	posicion := hash.buscarElemento(clave)
-	if posicion == -1 {
+	posicion, encontrado := hash.buscarElemento(clave)
+	if !encontrado {
 		panic("La clave no pertenece al diccionario")
 	}
 	valor := hash.tabla[posicion].dato
@@ -119,7 +105,7 @@ func (hash *hashCerrado[K, V]) Iterar(f func(clave K, dato V) bool) {
 }
 
 func (hash *hashCerrado[K, V]) Iterador() IterDiccionario[K, V] {
-	iterador := &iteradorHashCerrado[K, V]{diccionario: hash, posicionActual: POSICION_INICIAL}
+	iterador := &iteradorHashCerrado[K, V]{diccionario: hash, posicionActual: 0}
 	iterador.proximoOcupado()
 	return iterador
 }
@@ -161,8 +147,8 @@ func (hash *hashCerrado[K, V]) redimensionar(tam int) {
 	hash.tabla = crearTabla[K, V](tam)
 	hash.tam = tam
 	//reiniciamos los valores
-	hash.cantidad = CANTIDAD_INICIAL
-	hash.borrados = BORRADOS_INICIAL
+	hash.cantidad = 0
+	hash.borrados = 0
 	//reubicamos los elementos en la nueva tabla
 	for _, elem := range tablaAnterior {
 		if elem.estado == OCUPADO {
@@ -181,23 +167,23 @@ func (hash *hashCerrado[K, V]) factorCarga(contarBorrados bool) float32 {
 }
 
 // buscarElemento devuelve la posicion de una clave en una tabla de hash,en caso de no encontrarla devuelve -1
-func (hash *hashCerrado[K, V]) buscarElemento(clave K) int {
+func (hash *hashCerrado[K, V]) buscarElemento(clave K) (int, bool) {
 	bytes := convertirABytes(clave)
-	posicion := int(CityHash32(bytes)) % hash.tam
+	posicion := int(hashing(bytes)) % hash.tam
 	//iteramos hasta hallar una celda que no esta vacia
 	for hash.tabla[posicion].estado != VACIO {
 		// chequeamos si encontramos la celda
 		if hash.tabla[posicion].estado == OCUPADO && hash.tabla[posicion].clave == clave {
-			return posicion
+			return posicion, true
 		}
 		// en caso de estar en la ultima posicion, seguimos buscando a la primera
 		if posicion == hash.tam-1 {
-			posicion = PRIMERA_POSICION - 1
+			posicion = -1
 		}
 		posicion++
 	}
 	// llegado aca, ya itero toda la tabla y no encontre un ocupado
-	return -1
+	return posicion, false
 }
 
 // proximoOcupado incrementa la posicion del iterador hasta encontrar una celda ocupada y devuelve true,
@@ -210,4 +196,19 @@ func (iterador *iteradorHashCerrado[K, V]) proximoOcupado() bool {
 		iterador.posicionActual++
 	}
 	return false
+}
+
+// Funcion Hash
+func hashing(clave []byte) int {
+	if len(clave) == 0 {
+		return 0
+	}
+	size := uint32(1)
+	x := uint32(clave[0]) << 7
+	for _, c := range clave {
+		x = (1000003 * x) ^ uint32(c)
+		size++
+	}
+	x ^= size
+	return int(x)
 }
