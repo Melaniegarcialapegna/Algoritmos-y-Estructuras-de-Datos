@@ -1,5 +1,9 @@
 package diccionario
 
+import (
+	TDAPila "tdas/pila"
+)
+
 type nodoAbb[K comparable, V any] struct {
 	izquierdo *nodoAbb[K, V]
 	derecho   *nodoAbb[K, V]
@@ -55,7 +59,7 @@ func (abb *abb[K, V]) Obtener(clave K) V {
 		panic("La clave no pertenece al diccionario")
 	}
 
-	_ ,nodo, encontrado := abb.buscarElemento(clave)
+	_, nodo, encontrado := abb.buscarElemento(clave)
 	if !encontrado {
 		panic("La clave no pertenece al diccionario")
 	}
@@ -67,19 +71,19 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	if abb.raiz == nil {
 		panic("La clave no pertenece al diccionario")
 	}
-	
+
 	nodoPadre, nodoActual, _ := abb.buscarElemento(clave)
 
 	dato := nodoActual.dato
-	if nodoActual.clave == abb.raiz.clave{
-		if nodoActual.esHoja(){
+	if nodoActual.clave == abb.raiz.clave {
+		if nodoActual.esHoja() {
 			abb.raiz = nil
 			abb.cantidad--
 			return dato
-		}else if nodoActual.unHijo(){
-			if nodoActual.izquierdo != nil{
+		} else if nodoActual.unHijo() {
+			if nodoActual.izquierdo != nil {
 				abb.raiz = nodoActual.izquierdo
-			} else{
+			} else {
 				abb.raiz = nodoActual.derecho
 			}
 			abb.cantidad--
@@ -88,36 +92,36 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	}
 
 	//Si es una hoja
-	if nodoActual.esHoja(){
-		if nodoPadre.izquierdo.clave == nodoActual.clave{
+	if nodoActual.esHoja() {
+		if nodoPadre.izquierdo.clave == nodoActual.clave {
 			nodoPadre.izquierdo = nil
-		}else{
+		} else {
 			nodoPadre.derecho = nil
 		}
-	} else if nodoActual.unHijo(){
-		if nodoPadre.izquierdo.clave == nodoActual.clave{
-			if nodoActual.izquierdo != nil{
+	} else if nodoActual.unHijo() {
+		if nodoPadre.izquierdo.clave == nodoActual.clave {
+			if nodoActual.izquierdo != nil {
 				nodoPadre.izquierdo = nodoActual.izquierdo
-			}else{
+			} else {
 				nodoPadre.izquierdo = nodoActual.derecho
 			}
-		} else{
-			if nodoActual.izquierdo != nil{
+		} else {
+			if nodoActual.izquierdo != nil {
 				nodoPadre.derecho = nodoActual.izquierdo
-			}else{
+			} else {
 				nodoPadre.derecho = nodoActual.derecho
 			}
 		}
-	} else {//Si tengo dos hijitos
+	} else { //Si tengo dos hijitos
 		nodoReemplazo := buscarReemplazante(nodoActual)
-		if nodoActual.clave == abb.raiz.clave{
+		if nodoActual.clave == abb.raiz.clave {
 			abb.raiz = nodoReemplazo
 		}
 		dato = nodoActual.dato
 		nodoActual.clave = nodoReemplazo.clave
 		nodoActual.dato = nodoReemplazo.dato
 	}
-	
+
 	abb.cantidad--
 	return dato
 }
@@ -135,61 +139,77 @@ func (abb *abb[K, V]) Iterar(funcion func(clave K, dato V) bool) {
 }
 
 func (abb *abb[K, V]) iterar(nodo *nodoAbb[K, V], funcion func(clave K, dato V) bool) bool {
-	if nodo == nil{
+	if nodo == nil {
 		return true
 	}
 
-	if !abb.iterar(nodo.izquierdo, funcion){
+	if !abb.iterar(nodo.izquierdo, funcion) {
 		return false
 	}
-	if !funcion(nodo.clave, nodo.dato){
+	if !funcion(nodo.clave, nodo.dato) {
 		return false
 	}
 	return abb.iterar(nodo.derecho, funcion)
 }
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
-	pila := 
-	iterador := &iteradorHashCerrado[K, V]{abb, }
+	return abb.IteradorRango(nil, nil)
 }
 
-
 type iteradorABB[K comparable, V any] struct {
-	arbol      abb[K, V]
-	recorrido  TDAPila.Pila[*nodo[K, V]]
+	arbol      *abb[K, V]
+	pila       TDAPila.Pila[*nodoAbb[K, V]]
 	funcionCmp func(K, K) int
 	desde      *K
 	hasta      *K
 }
 
+// Iterador Rango
 
-//Iterador Rango
-func (abb *abb[K, V]) IterarRango(*K, *K, func(K, V) bool) {
+func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, funcion func(clave K, dato V) bool) {
 	return
 }
 
-func (abb *abb[K, V]) IteradorRango(*K, *K) IterDiccionario[K, V] {
-	return
+func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
+	pila := TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()
+	nodoActual := abb.raiz
+	for nodoActual != nil {
+		pila.Apilar(nodoActual)
+		nodoActual = nodoActual.izquierdo
+	}
+	return &iteradorABB[K, V]{arbol: abb, pila: pila, funcionCmp: abb.cmp, desde: desde, hasta: hasta}
 }
-
 
 //Iterador externo
 
-func (abb *abb[K, V]) HaySiguiente() bool {
-	return true
+func (iter *iteradorABB[K, V]) HaySiguiente() bool {
+	return !iter.pila.EstaVacia()
 }
 
-func (abb *abb[K, V]) VerActual() (K, V) {
-	return 1 ,2
+func (iter *iteradorABB[K, V]) VerActual() (K, V) {
+	if !iter.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+	nodo := iter.pila.VerTope()
+	return nodo.clave, nodo.dato
 }
 
-func (abb *abb[K, V]) Siguiente() {
-	return
+func (iter *iteradorABB[K, V]) Siguiente() {
+	if !iter.HaySiguiente() {
+		panic("El iterador termino de iterar")
+	}
+
+	nodo := iter.pila.Desapilar()
+	nodoActual := nodo.derecho
+	for nodoActual != nil {
+		iter.pila.Apilar(nodoActual)
+		nodoActual = nodoActual.izquierdo
+	}
 }
 
-//Nuestras funcion
+// Nuestras funcion
 func (abb *abb[K, V]) buscarElemento(clave K) (*nodoAbb[K, V], *nodoAbb[K, V], bool) {
-	return abb.buscarNodo(nil,abb.raiz, clave)
+	return abb.buscarNodo(nil, abb.raiz, clave)
 }
 
 func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K, V], clave K) (*nodoAbb[K, V], *nodoAbb[K, V], bool) {
@@ -208,29 +228,28 @@ func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K
 	} else if nodoActual.izquierdo == nil && nodoActual.derecho == nil { //Si estamos en una hoja
 		return nodoPadre, nodoActual, false
 	}
-	return nil, nil,false
+	return nil, nil, false
 }
 
-func (nodo *nodoAbb[K,V]) esHoja() bool{
+func (nodo *nodoAbb[K, V]) esHoja() bool {
 	return nodo.izquierdo == nil && nodo.derecho == nil
 }
 
-func (nodo *nodoAbb[K,V]) unHijo() bool{
+func (nodo *nodoAbb[K, V]) unHijo() bool {
 	return (nodo.izquierdo != nil && nodo.derecho == nil) || (nodo.derecho == nil && nodo.derecho != nil)
 }
 
-func buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V]{
-	nodoPadre := nil
-	nodoReemplazo = nodo.derecho.izquierdo // el mas chiquito de la derecha
-	for nodoReemplazo.izquierdo != nil{
+func buscarReemplazante[K comparable, V any](nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
+	var nodoPadre *nodoAbb[K, V] = nil
+	nodoReemplazo := nodo.derecho.izquierdo // el mas chiquito de la derecha
+	for nodoReemplazo.izquierdo != nil {
 		nodoPadre = nodoReemplazo
 		nodoReemplazo = nodoReemplazo.izquierdo
 	}
-	if nodoPadre != nil{
+	if nodoPadre != nil {
 		nodoPadre.izquierdo = nil
-	} else{
+	} else {
 		nodo.derecho = nil
 	}
 	return nodoReemplazo
 }
-
