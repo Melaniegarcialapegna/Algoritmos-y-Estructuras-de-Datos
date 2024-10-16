@@ -69,10 +69,24 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	}
 	
 	nodoPadre, nodoActual, encontrado := abb.buscarNodo(clave)
-	if !encontrado{
-		panic("La clave no pertenece al diccionario")
-	}
+
 	dato := nodoActual.dato
+	if nodoActual.clave == abb.raiz.clave{
+		if nodoActual.esHoja(){
+			abb.raiz = nil
+			abb.cantidad--
+			return dato
+		}else if nodoActual.unHijo(){
+			if nodoActual.izquierdo != nil{
+				abb.raiz = nodoActual.izquierdo
+			} else{
+				abb.raiz = nodoActual.derecho
+			}
+			abb.cantidad--
+			return dato
+		}
+	}
+
 	//Si es una hoja
 	if nodoActual.esHoja(){
 		if nodoPadre.izquierdo.clave == nodoActual.clave{
@@ -96,6 +110,9 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 		}
 	} else {//Si tengo dos hijitos
 		nodoReemplazo := buscarReemplazante(nodoActual)
+		if nodoActual.clave == abb.raiz.clave{
+			abb.raiz = nodoReemplazo
+		}
 		dato = nodoActual.dato
 		nodoActual.clave = nodoReemplazo.clave
 		nodoActual.dato = nodoReemplazo.dato
@@ -125,6 +142,13 @@ func (abb *abb[K, V]) IteradorRango(*K, *K) IterDiccionario[K, V] {
 	return
 }
 
+
+
+
+
+
+
+//Nuestras funcion
 func (abb *abb[K, V]) buscarElemento(clave K) (*nodoAbb[K, V], bool) {
 	return abb.buscarNodo(nil,abb.raiz, clave)
 }
@@ -146,37 +170,6 @@ func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K
 		return nodoPadre, nodoActual, false
 	}
 	return nil, nil,false
-}
-
-func (abb *abb[K, V]) borrarNodo(nodoActual *nodoAbb[K, V], clave K) (V, bool) {
-	if nodoActual.clave == clave {
-		//Si no tiene hijos
-		if nodoActual.izquierdo == nil && nodoActual.derecho == nil {
-			nodoActual = nil
-		}
-
-		//Tiene solo un hijo
-		if nodoActual.izquierdo == nil && nodoActual.derecho != nil {
-			nodoActual = nodoActual.derecho
-		}
-		if nodoActual.izquierdo != nil && nodoActual.derecho == nil {
-			nodoActual = nodoActual.izquierdo
-
-		}
-
-		//Tiene dos hijos
-		if nodoActual.izquierdo != nil && nodoActual.derecho != nil {
-			nodoReemplazo := nodoPadre.derecho.izquierdo // el mas chiquito de la derecha
-			for nodoReemplazo.izquierdo != nil {
-				nodoReemplazo = nodoReemplazo.izquierdo
-			}
-			nodoActual.clave = nodoReemplazo.clave
-			nodoActual.dato = nodoReemplazo.dato
-		}
-		abb.cantidad--
-		return nodoActual.dato, true
-	}
-	return nodoActual.dato, false
 }
 
 func (nodo *nodoAbb[K,V]) esHoja() bool{
