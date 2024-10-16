@@ -134,31 +134,36 @@ func (abb *abb[K, V]) Iterar(funcion func(clave K, dato V) bool) {
 	abb.iterar(abb.raiz, funcion)
 }
 
-
-
-func (abb *abb[K, V]) iterar(nodo *nodoAbb[K, V], funcion func(clave K, dato V) bool){
+func (abb *abb[K, V]) iterar(nodo *nodoAbb[K, V], funcion func(clave K, dato V) bool) bool {
 	if nodo == nil{
-		return
+		return true
 	}
 
-	avanzarIzq := abb.iterar(nodo.izquierdo, funcion)
-	if !avanzarIzq{
-		return
+	if !abb.iterar(nodo.izquierdo, funcion){
+		return false
 	}
-	avanzarActual := funcion(nodo)
-	if !avanzarActual{
-		return
+	if !funcion(nodo.clave, nodo.dato){
+		return false
 	}
-	avanzarDer := abb.iterar(nodo.derecho, funcion)
-	if !avanzarDer{
-		return
-	}
+	return abb.iterar(nodo.derecho, funcion)
 }
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
-	return
+	pila := 
+	iterador := &iteradorHashCerrado[K, V]{abb, }
 }
 
+
+type iteradorABB[K comparable, V any] struct {
+	arbol      abb[K, V]
+	recorrido  TDAPila.Pila[*nodo[K, V]]
+	funcionCmp func(K, K) int
+	desde      *K
+	hasta      *K
+}
+
+
+//Iterador Rango
 func (abb *abb[K, V]) IterarRango(*K, *K, func(K, V) bool) {
 	return
 }
@@ -168,6 +173,19 @@ func (abb *abb[K, V]) IteradorRango(*K, *K) IterDiccionario[K, V] {
 }
 
 
+//Iterador externo
+
+func (abb *abb[K, V]) HaySiguiente() bool {
+	return true
+}
+
+func (abb *abb[K, V]) VerActual() (K, V) {
+	return 1 ,2
+}
+
+func (abb *abb[K, V]) Siguiente() {
+	return
+}
 
 //Nuestras funcion
 func (abb *abb[K, V]) buscarElemento(clave K) (*nodoAbb[K, V], *nodoAbb[K, V], bool) {
@@ -177,7 +195,7 @@ func (abb *abb[K, V]) buscarElemento(clave K) (*nodoAbb[K, V], *nodoAbb[K, V], b
 func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K, V], clave K) (*nodoAbb[K, V], *nodoAbb[K, V], bool) {
 	//Caso Base
 	if nodoActual == nil {
-		return nil, false
+		return nodoPadre, nil, false
 	}
 
 	condicion := abb.cmp(nodoActual.clave, clave)
