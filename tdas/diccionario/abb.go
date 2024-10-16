@@ -30,7 +30,7 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 		return
 	}
 	_, nodo, encontrado := abb.buscarElemento(clave)
-	condicion := abb.cmp(nodoPadre.clave, clave)
+	condicion := abb.cmp(nodo.clave, clave)
 	if !encontrado {
 		if condicion > 0 {
 			nodo.izquierdo = nodoNuevo
@@ -68,7 +68,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 		panic("La clave no pertenece al diccionario")
 	}
 	
-	nodoPadre, nodoActual, encontrado := abb.buscarNodo(clave)
+	nodoPadre, nodoActual, _ := abb.buscarElemento(clave)
 
 	dato := nodoActual.dato
 	if nodoActual.clave == abb.raiz.clave{
@@ -97,7 +97,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	} else if nodoActual.unHijo(){
 		if nodoPadre.izquierdo.clave == nodoActual.clave{
 			if nodoActual.izquierdo != nil{
-				nodoPadre.izquierdo = nodo.izquierdo
+				nodoPadre.izquierdo = nodoActual.izquierdo
 			}else{
 				nodoPadre.izquierdo = nodoActual.derecho
 			}
@@ -126,8 +126,33 @@ func (abb *abb[K, V]) Cantidad() int {
 	return abb.cantidad
 }
 
-func (abb *abb[K, V]) Iterar(f func(clave K, dato V) bool) {
-	return
+func (abb *abb[K, V]) Iterar(funcion func(clave K, dato V) bool) {
+	//iteramos in order
+	//izq
+	//yo
+	//der
+	abb.iterar(abb.raiz, funcion)
+}
+
+
+
+func (abb *abb[K, V]) iterar(nodo *nodoAbb[K, V], funcion func(clave K, dato V) bool){
+	if nodo == nil{
+		return
+	}
+
+	avanzarIzq := abb.iterar(nodo.izquierdo, funcion)
+	if !avanzarIzq{
+		return
+	}
+	avanzarActual := funcion(nodo)
+	if !avanzarActual{
+		return
+	}
+	avanzarDer := abb.iterar(nodo.derecho, funcion)
+	if !avanzarDer{
+		return
+	}
 }
 
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
@@ -144,16 +169,12 @@ func (abb *abb[K, V]) IteradorRango(*K, *K) IterDiccionario[K, V] {
 
 
 
-
-
-
-
 //Nuestras funcion
-func (abb *abb[K, V]) buscarElemento(clave K) (*nodoAbb[K, V], bool) {
+func (abb *abb[K, V]) buscarElemento(clave K) (*nodoAbb[K, V], *nodoAbb[K, V], bool) {
 	return abb.buscarNodo(nil,abb.raiz, clave)
 }
 
-func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K, V], clave K) (*nodoAbb[K, V], bool) {
+func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K, V], clave K) (*nodoAbb[K, V], *nodoAbb[K, V], bool) {
 	//Caso Base
 	if nodoActual == nil {
 		return nil, false
@@ -194,3 +215,4 @@ func buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V]{
 	}
 	return nodoReemplazo
 }
+
