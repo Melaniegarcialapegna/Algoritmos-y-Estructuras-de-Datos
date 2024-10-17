@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var TAMS_VOLUMEN = []int{12500, 25000, 50000, 100000, 200000, 400000}
+var TAMS_VOLUMENxd = []int{12500, 25000, 50000, 100000, 200000, 400000}
 
 func TestDiccionarioVacio(t *testing.T) {
 	t.Log("Comprueba que Diccionario vacio no tiene claves")
