@@ -166,10 +166,40 @@ type iteradorABB[K comparable, V any] struct {
 
 // Iterador Rango
 
+// interno rangos
 func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, funcion func(clave K, dato V) bool) {
-	return
+	abb.iterarRango(abb.raiz, desde, hasta, funcion)
 }
 
+func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funcion func(clave K, dato V) bool) bool {
+	if nodo == nil {
+		return true
+	}
+	// Vemos si el nodo actual es mayor a DESDE(inicio)
+
+	if abb.cmp(nodo.clave, *desde) > 0 {
+		seguirIzq := abb.iterarRango(nodo.izquierdo, desde, hasta, funcion)
+		if !seguirIzq {
+			return false
+		}
+	}
+
+	if abb.cmp(nodo.clave, *desde) > 0 && abb.cmp(nodo.clave, *hasta) < 0 {
+		if !funcion(nodo.clave, nodo.dato) { //:) Le aplico la fun al nodo y si dev FALSO termmino de iterar
+			return false
+		}
+	}
+
+	if abb.cmp(nodo.clave, *hasta) > 0 {
+		seguirIzq := abb.iterarRango(nodo.izquierdo, desde, hasta, funcion)
+		if !seguirIzq {
+			return false
+		}
+	}
+	return true
+}
+
+// externo rangos
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	pila := TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()
 	nodoActual := abb.raiz
@@ -180,8 +210,7 @@ func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	return &iteradorABB[K, V]{arbol: abb, pila: pila, funcionCmp: abb.cmp, desde: desde, hasta: hasta}
 }
 
-//Iterador externo
-
+// Iterador externo
 func (iter *iteradorABB[K, V]) HaySiguiente() bool {
 	return !iter.pila.EstaVacia()
 }
