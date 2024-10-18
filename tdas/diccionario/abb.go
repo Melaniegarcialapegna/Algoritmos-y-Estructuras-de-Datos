@@ -33,17 +33,18 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 		abb.cantidad++
 		return
 	}
-	_, nodo, encontrado := abb.buscarElemento(clave)
-	condicion := abb.cmp(nodo.clave, clave)
+	nodoPadre, nodo, encontrado := abb.buscarElemento(clave)
 	if !encontrado {
+		condicion := abb.cmp(nodoPadre.clave, clave)
 		if condicion > 0 {
-			nodo.izquierdo = nodoNuevo
+			nodoPadre.izquierdo = nodoNuevo
 		} else {
-			nodo.derecho = nodoNuevo
+			nodoPadre.derecho = nodoNuevo
 		}
 		abb.cantidad++
+	} else {
+		nodo.dato = dato
 	}
-	nodo.dato = nodoNuevo.dato
 }
 
 func (abb *abb[K, V]) Pertenece(clave K) bool {
@@ -72,7 +73,10 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 		panic("La clave no pertenece al diccionario")
 	}
 
-	nodoPadre, nodoActual, _ := abb.buscarElemento(clave)
+	nodoPadre, nodoActual, encontrado := abb.buscarElemento(clave)
+	if !encontrado {
+		panic("La clave no pertenece al diccionario")
+	}
 
 	dato := nodoActual.dato
 	if nodoActual.clave == abb.raiz.clave {
@@ -93,13 +97,13 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 
 	//Si es una hoja
 	if nodoActual.esHoja() {
-		if nodoPadre.izquierdo.clave == nodoActual.clave {
+		if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
 			nodoPadre.izquierdo = nil
 		} else {
 			nodoPadre.derecho = nil
 		}
 	} else if nodoActual.unHijo() {
-		if nodoPadre.izquierdo.clave == nodoActual.clave {
+		if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
 			if nodoActual.izquierdo != nil {
 				nodoPadre.izquierdo = nodoActual.izquierdo
 			} else {
@@ -113,13 +117,15 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 			}
 		}
 	} else { //Si tengo dos hijitos
-		nodoReemplazo := buscarReemplazante(nodoActual)
+		nodoReemplazo := abb.buscarReemplazante(nodoActual)
 		if nodoActual.clave == abb.raiz.clave {
-			abb.raiz = nodoReemplazo
+			abb.raiz.clave = nodoReemplazo.clave
+			abb.raiz.dato = nodoReemplazo.dato
+		} else {
+			dato = nodoActual.dato
+			nodoActual.clave = nodoReemplazo.clave
+			nodoActual.dato = nodoReemplazo.dato
 		}
-		dato = nodoActual.dato
-		nodoActual.clave = nodoReemplazo.clave
-		nodoActual.dato = nodoReemplazo.dato
 	}
 
 	abb.cantidad--
@@ -202,12 +208,11 @@ func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funci
 // externo rangos
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	pila := TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()
-	nodoActual := abb.raiz
-	for nodoActual != nil {
-		pila.Apilar(nodoActual)
-		nodoActual = nodoActual.izquierdo
+	iter := &iteradorABB[K, V]{arbol: abb, pila: pila, funcionCmp: abb.cmp, desde: desde, hasta: hasta}
+	if abb.cantidad != 0 {
+		iter.apilarIzquierdos(abb.raiz)
 	}
-	return &iteradorABB[K, V]{arbol: abb, pila: pila, funcionCmp: abb.cmp, desde: desde, hasta: hasta}
+	return iter
 }
 
 // Iterador externo
@@ -227,13 +232,8 @@ func (iter *iteradorABB[K, V]) Siguiente() {
 	if !iter.HaySiguiente() {
 		panic("El iterador termino de iterar")
 	}
-
-	nodo := iter.pila.Desapilar()
-	nodoActual := nodo.derecho
-	for nodoActual != nil {
-		iter.pila.Apilar(nodoActual)
-		nodoActual = nodoActual.izquierdo
-	}
+	actual := iter.pila.Desapilar()
+	iter.apilarIzquierdos(actual.derecho)
 }
 
 // Nuestras funcion
@@ -265,20 +265,31 @@ func (nodo *nodoAbb[K, V]) esHoja() bool {
 }
 
 func (nodo *nodoAbb[K, V]) unHijo() bool {
-	return (nodo.izquierdo != nil && nodo.derecho == nil) || (nodo.derecho == nil && nodo.derecho != nil)
+	return (nodo.izquierdo != nil && nodo.derecho == nil) || (nodo.izquierdo == nil && nodo.derecho != nil)
 }
 
-func buscarReemplazante[K comparable, V any](nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
+func (abb *abb[K, V]) buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
 	var nodoPadre *nodoAbb[K, V] = nil
 	nodoReemplazo := nodo.derecho.izquierdo // el mas chiquito de la derecha
-	for nodoReemplazo.izquierdo != nil {
+	for nodoReemplazo != nil && nodoReemplazo.izquierdo != nil {
 		nodoPadre = nodoReemplazo
 		nodoReemplazo = nodoReemplazo.izquierdo
 	}
-	if nodoPadre != nil {
-		nodoPadre.izquierdo = nil
-	} else {
-		nodo.derecho = nil
+	if nodoPadre == nil {
+		nodoReemplazo = nodo.derecho
 	}
+	abb.Borrar(nodoReemplazo.clave)
 	return nodoReemplazo
+}
+
+func (iter *iteradorABB[K, V]) apilarIzquierdos(nodo *nodoAbb[K, V]) {
+	//mientras haya nodo a la izq
+	for nodo != nil {
+		if (iter.desde == nil || iter.funcionCmp(*iter.desde, nodo.clave) <= 0) && (iter.hasta == nil || iter.funcionCmp(*iter.hasta, nodo.clave) >= 0) {
+			iter.pila.Apilar(nodo)
+		} else if (iter.desde != nil) && (iter.funcionCmp(*iter.desde, nodo.clave) > 0) {
+			nodo = nodo.derecho
+		}
+		nodo = nodo.izquierdo
+	}
 }

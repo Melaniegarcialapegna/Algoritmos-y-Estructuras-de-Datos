@@ -2,49 +2,52 @@ package diccionario_test
 
 import (
 	"fmt"
+	"strings"
 	TDADiccionario "tdas/diccionario"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-var TAMS_VOLUMENxd = []int{12500, 25000, 50000, 100000, 200000, 400000}
+func comparacionEnteros(a, b int) int {
+	return a - b
+}
 
-func TestDiccionarioVacio(t *testing.T) {
+func TestDiccionarioVacioAbb(t *testing.T) {
 	t.Log("Comprueba que Diccionario vacio no tiene claves")
-	dic := TDADiccionario.CrearHash[string, string]()
-	require.EqualValues(t, 0, dic.Cantidad())
-	require.False(t, dic.Pertenece("A"))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener("A") })
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Borrar("A") })
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
+	require.EqualValues(t, 0, abb.Cantidad())
+	require.False(t, abb.Pertenece("A"))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener("A") })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar("A") })
 }
 
-func TestDiccionarioClaveDefault(t *testing.T) {
-	t.Log("Prueba sobre un Hash vacío que si justo buscamos la clave que es el default del tipo de dato, " +
+func TestDiccionarioClaveDefaultAbb(t *testing.T) {
+	t.Log("Prueba sobre un Abb vacío que si justo buscamos la clave que es el default del tipo de dato, " +
 		"sigue sin existir")
-	dic := TDADiccionario.CrearHash[string, string]()
-	require.False(t, dic.Pertenece(""))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener("") })
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Borrar("") })
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
+	require.False(t, abb.Pertenece(""))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener("") })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar("") })
 
-	dicNum := TDADiccionario.CrearHash[int, string]()
-	require.False(t, dicNum.Pertenece(0))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dicNum.Obtener(0) })
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dicNum.Borrar(0) })
+	abbNum := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+	require.False(t, abbNum.Pertenece(0))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abbNum.Obtener(0) })
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abbNum.Borrar(0) })
 }
 
-func TestUnElement(t *testing.T) {
+func TestUnElementAbb(t *testing.T) {
 	t.Log("Comprueba que Diccionario con un elemento tiene esa Clave, unicamente")
-	dic := TDADiccionario.CrearHash[string, int]()
-	dic.Guardar("A", 10)
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.True(t, dic.Pertenece("A"))
-	require.False(t, dic.Pertenece("B"))
-	require.EqualValues(t, 10, dic.Obtener("A"))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener("B") })
+	abb := TDADiccionario.CrearABB[string, int](strings.Compare)
+	abb.Guardar("A", 10)
+	require.EqualValues(t, 1, abb.Cantidad())
+	require.True(t, abb.Pertenece("A"))
+	require.False(t, abb.Pertenece("B"))
+	require.EqualValues(t, 10, abb.Obtener("A"))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener("B") })
 }
 
-func TestDiccionarioGuardar(t *testing.T) {
+func TestDiccionarioGuardarAbb(t *testing.T) {
 	t.Log("Guarda algunos pocos elementos en el diccionario, y se comprueba que en todo momento funciona acorde")
 	clave1 := "Gato"
 	clave2 := "Perro"
@@ -55,77 +58,77 @@ func TestDiccionarioGuardar(t *testing.T) {
 	claves := []string{clave1, clave2, clave3}
 	valores := []string{valor1, valor2, valor3}
 
-	dic := TDADiccionario.CrearHash[string, string]()
-	require.False(t, dic.Pertenece(claves[0]))
-	require.False(t, dic.Pertenece(claves[0]))
-	dic.Guardar(claves[0], valores[0])
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.True(t, dic.Pertenece(claves[0]))
-	require.True(t, dic.Pertenece(claves[0]))
-	require.EqualValues(t, valores[0], dic.Obtener(claves[0]))
-	require.EqualValues(t, valores[0], dic.Obtener(claves[0]))
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
+	require.False(t, abb.Pertenece(claves[0]))
+	require.False(t, abb.Pertenece(claves[0]))
+	abb.Guardar(claves[0], valores[0])
+	require.EqualValues(t, 1, abb.Cantidad())
+	require.True(t, abb.Pertenece(claves[0]))
+	require.True(t, abb.Pertenece(claves[0]))
+	require.EqualValues(t, valores[0], abb.Obtener(claves[0]))
+	require.EqualValues(t, valores[0], abb.Obtener(claves[0]))
 
-	require.False(t, dic.Pertenece(claves[1]))
-	require.False(t, dic.Pertenece(claves[2]))
-	dic.Guardar(claves[1], valores[1])
-	require.True(t, dic.Pertenece(claves[0]))
-	require.True(t, dic.Pertenece(claves[1]))
-	require.EqualValues(t, 2, dic.Cantidad())
-	require.EqualValues(t, valores[0], dic.Obtener(claves[0]))
-	require.EqualValues(t, valores[1], dic.Obtener(claves[1]))
+	require.False(t, abb.Pertenece(claves[1]))
+	require.False(t, abb.Pertenece(claves[2]))
+	abb.Guardar(claves[1], valores[1])
+	require.True(t, abb.Pertenece(claves[0]))
+	require.True(t, abb.Pertenece(claves[1]))
+	require.EqualValues(t, 2, abb.Cantidad())
+	require.EqualValues(t, valores[0], abb.Obtener(claves[0]))
+	require.EqualValues(t, valores[1], abb.Obtener(claves[1]))
 
-	require.False(t, dic.Pertenece(claves[2]))
-	dic.Guardar(claves[2], valores[2])
-	require.True(t, dic.Pertenece(claves[0]))
-	require.True(t, dic.Pertenece(claves[1]))
-	require.True(t, dic.Pertenece(claves[2]))
-	require.EqualValues(t, 3, dic.Cantidad())
-	require.EqualValues(t, valores[0], dic.Obtener(claves[0]))
-	require.EqualValues(t, valores[1], dic.Obtener(claves[1]))
-	require.EqualValues(t, valores[2], dic.Obtener(claves[2]))
+	require.False(t, abb.Pertenece(claves[2]))
+	abb.Guardar(claves[2], valores[2])
+	require.True(t, abb.Pertenece(claves[0]))
+	require.True(t, abb.Pertenece(claves[1]))
+	require.True(t, abb.Pertenece(claves[2]))
+	require.EqualValues(t, 3, abb.Cantidad())
+	require.EqualValues(t, valores[0], abb.Obtener(claves[0]))
+	require.EqualValues(t, valores[1], abb.Obtener(claves[1]))
+	require.EqualValues(t, valores[2], abb.Obtener(claves[2]))
 }
 
-func TestReemplazoDato(t *testing.T) {
+func TestReemplazoDatoAbb(t *testing.T) {
 	t.Log("Guarda un par de claves, y luego vuelve a guardar, buscando que el dato se haya reemplazado")
 	clave := "Gato"
 	clave2 := "Perro"
-	dic := TDADiccionario.CrearHash[string, string]()
-	dic.Guardar(clave, "miau")
-	dic.Guardar(clave2, "guau")
-	require.True(t, dic.Pertenece(clave))
-	require.True(t, dic.Pertenece(clave2))
-	require.EqualValues(t, "miau", dic.Obtener(clave))
-	require.EqualValues(t, "guau", dic.Obtener(clave2))
-	require.EqualValues(t, 2, dic.Cantidad())
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
+	abb.Guardar(clave, "miau")
+	abb.Guardar(clave2, "guau")
+	require.True(t, abb.Pertenece(clave))
+	require.True(t, abb.Pertenece(clave2))
+	require.EqualValues(t, "miau", abb.Obtener(clave))
+	require.EqualValues(t, "guau", abb.Obtener(clave2))
+	require.EqualValues(t, 2, abb.Cantidad())
 
-	dic.Guardar(clave, "miu")
-	dic.Guardar(clave2, "baubau")
-	require.True(t, dic.Pertenece(clave))
-	require.True(t, dic.Pertenece(clave2))
-	require.EqualValues(t, 2, dic.Cantidad())
-	require.EqualValues(t, "miu", dic.Obtener(clave))
-	require.EqualValues(t, "baubau", dic.Obtener(clave2))
+	abb.Guardar(clave, "miu")
+	abb.Guardar(clave2, "baubau")
+	require.True(t, abb.Pertenece(clave))
+	require.True(t, abb.Pertenece(clave2))
+	require.EqualValues(t, 2, abb.Cantidad())
+	require.EqualValues(t, "miu", abb.Obtener(clave))
+	require.EqualValues(t, "baubau", abb.Obtener(clave2))
 }
 
-func TestReemplazoDatoHopscotch(t *testing.T) {
+func TestReemplazoDatoHopscotchAbb(t *testing.T) {
 	t.Log("Guarda bastantes claves, y luego reemplaza sus datos. Luego valida que todos los datos sean " +
 		"correctos. Para una implementación Hopscotch, detecta errores al hacer lugar o guardar elementos.")
 
-	dic := TDADiccionario.CrearHash[int, int]()
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 	for i := 0; i < 500; i++ {
-		dic.Guardar(i, i)
+		abb.Guardar(i, i)
 	}
 	for i := 0; i < 500; i++ {
-		dic.Guardar(i, 2*i)
+		abb.Guardar(i, 2*i)
 	}
 	ok := true
 	for i := 0; i < 500 && ok; i++ {
-		ok = dic.Obtener(i) == 2*i
+		ok = abb.Obtener(i) == 2*i
 	}
 	require.True(t, ok, "Los elementos no fueron actualizados correctamente")
 }
 
-func TestDiccionarioBorrar(t *testing.T) {
+func TestDiccionarioBorrarAbb(t *testing.T) {
 	t.Log("Guarda algunos pocos elementos en el diccionario, y se los borra, revisando que en todo momento " +
 		"el diccionario se comporte de manera adecuada")
 	clave1 := "Gato"
@@ -136,186 +139,118 @@ func TestDiccionarioBorrar(t *testing.T) {
 	valor3 := "moo"
 	claves := []string{clave1, clave2, clave3}
 	valores := []string{valor1, valor2, valor3}
-	dic := TDADiccionario.CrearHash[string, string]()
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
 
-	require.False(t, dic.Pertenece(claves[0]))
-	require.False(t, dic.Pertenece(claves[0]))
-	dic.Guardar(claves[0], valores[0])
-	dic.Guardar(claves[1], valores[1])
-	dic.Guardar(claves[2], valores[2])
+	require.False(t, abb.Pertenece(claves[0]))
+	require.False(t, abb.Pertenece(claves[0]))
+	abb.Guardar(claves[0], valores[0])
+	abb.Guardar(claves[1], valores[1])
+	abb.Guardar(claves[2], valores[2])
 
-	require.True(t, dic.Pertenece(claves[2]))
-	require.EqualValues(t, valores[2], dic.Borrar(claves[2]))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Borrar(claves[2]) })
-	require.EqualValues(t, 2, dic.Cantidad())
-	require.False(t, dic.Pertenece(claves[2]))
+	require.True(t, abb.Pertenece(claves[2]))
+	require.EqualValues(t, valores[2], abb.Borrar(claves[2]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[2]) })
+	require.EqualValues(t, 2, abb.Cantidad())
+	require.False(t, abb.Pertenece(claves[2]))
 
-	require.True(t, dic.Pertenece(claves[0]))
-	require.EqualValues(t, valores[0], dic.Borrar(claves[0]))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Borrar(claves[0]) })
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.False(t, dic.Pertenece(claves[0]))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener(claves[0]) })
+	require.True(t, abb.Pertenece(claves[0]))
+	require.EqualValues(t, valores[0], abb.Borrar(claves[0]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[0]) })
+	require.EqualValues(t, 1, abb.Cantidad())
+	require.False(t, abb.Pertenece(claves[0]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[0]) })
 
-	require.True(t, dic.Pertenece(claves[1]))
-	require.EqualValues(t, valores[1], dic.Borrar(claves[1]))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Borrar(claves[1]) })
-	require.EqualValues(t, 0, dic.Cantidad())
-	require.False(t, dic.Pertenece(claves[1]))
-	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { dic.Obtener(claves[1]) })
+	require.True(t, abb.Pertenece(claves[1]))
+	require.EqualValues(t, valores[1], abb.Borrar(claves[1]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Borrar(claves[1]) })
+	require.EqualValues(t, 0, abb.Cantidad())
+	require.False(t, abb.Pertenece(claves[1]))
+	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[1]) })
 }
 
-func TestReutlizacionDeBorrados(t *testing.T) {
+func TestReutlizacionDeBorradosAbb(t *testing.T) {
 	t.Log("Prueba de caja blanca: revisa, para el caso que fuere un HashCerrado, que no haya problema " +
 		"reinsertando un elemento borrado")
-	dic := TDADiccionario.CrearHash[string, string]()
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
 	clave := "hola"
-	dic.Guardar(clave, "mundo!")
-	dic.Borrar(clave)
-	require.EqualValues(t, 0, dic.Cantidad())
-	require.False(t, dic.Pertenece(clave))
-	dic.Guardar(clave, "mundooo!")
-	require.True(t, dic.Pertenece(clave))
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.EqualValues(t, "mundooo!", dic.Obtener(clave))
+	abb.Guardar(clave, "mundo!")
+	abb.Borrar(clave)
+	require.EqualValues(t, 0, abb.Cantidad())
+	require.False(t, abb.Pertenece(clave))
+	abb.Guardar(clave, "mundooo!")
+	require.True(t, abb.Pertenece(clave))
+	require.EqualValues(t, 1, abb.Cantidad())
+	require.EqualValues(t, "mundooo!", abb.Obtener(clave))
 }
 
-func TestConClavesNumericas(t *testing.T) {
+func TestConClavesNumericasAbb(t *testing.T) {
 	t.Log("Valida que no solo funcione con strings")
-	dic := TDADiccionario.CrearHash[int, string]()
+	abb := TDADiccionario.CrearABB[int, string](comparacionEnteros)
 	clave := 10
 	valor := "Gatito"
 
-	dic.Guardar(clave, valor)
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.True(t, dic.Pertenece(clave))
-	require.EqualValues(t, valor, dic.Obtener(clave))
-	require.EqualValues(t, valor, dic.Borrar(clave))
-	require.False(t, dic.Pertenece(clave))
+	abb.Guardar(clave, valor)
+	require.EqualValues(t, 1, abb.Cantidad())
+	require.True(t, abb.Pertenece(clave))
+	require.EqualValues(t, valor, abb.Obtener(clave))
+	require.EqualValues(t, valor, abb.Borrar(clave))
+	require.False(t, abb.Pertenece(clave))
 }
 
-func TestConClavesStructs(t *testing.T) {
-	t.Log("Valida que tambien funcione con estructuras mas complejas")
-	type basico struct {
-		a string
-		b int
-	}
-	type avanzado struct {
-		w int
-		x basico
-		y basico
-		z string
-	}
-
-	dic := TDADiccionario.CrearHash[avanzado, int]()
-
-	a1 := avanzado{w: 10, z: "hola", x: basico{a: "mundo", b: 8}, y: basico{a: "!", b: 10}}
-	a2 := avanzado{w: 10, z: "aloh", x: basico{a: "odnum", b: 14}, y: basico{a: "!", b: 5}}
-	a3 := avanzado{w: 10, z: "hello", x: basico{a: "world", b: 8}, y: basico{a: "!", b: 4}}
-
-	dic.Guardar(a1, 0)
-	dic.Guardar(a2, 1)
-	dic.Guardar(a3, 2)
-
-	require.True(t, dic.Pertenece(a1))
-	require.True(t, dic.Pertenece(a2))
-	require.True(t, dic.Pertenece(a3))
-	require.EqualValues(t, 0, dic.Obtener(a1))
-	require.EqualValues(t, 1, dic.Obtener(a2))
-	require.EqualValues(t, 2, dic.Obtener(a3))
-	dic.Guardar(a1, 5)
-	require.EqualValues(t, 5, dic.Obtener(a1))
-	require.EqualValues(t, 2, dic.Obtener(a3))
-	require.EqualValues(t, 5, dic.Borrar(a1))
-	require.False(t, dic.Pertenece(a1))
-	require.EqualValues(t, 2, dic.Obtener(a3))
-
-}
-
-func TestClaveVacia(t *testing.T) {
+func TestClaveVaciaAbb(t *testing.T) {
 	t.Log("Guardamos una clave vacía (i.e. \"\") y deberia funcionar sin problemas")
-	dic := TDADiccionario.CrearHash[string, string]()
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
 	clave := ""
-	dic.Guardar(clave, clave)
-	require.True(t, dic.Pertenece(clave))
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.EqualValues(t, clave, dic.Obtener(clave))
+	abb.Guardar(clave, clave)
+	require.True(t, abb.Pertenece(clave))
+	require.EqualValues(t, 1, abb.Cantidad())
+	require.EqualValues(t, clave, abb.Obtener(clave))
 }
 
-func TestValorNulo(t *testing.T) {
+func TestValorNuloAbb(t *testing.T) {
 	t.Log("Probamos que el valor puede ser nil sin problemas")
-	dic := TDADiccionario.CrearHash[string, *int]()
+	abb := TDADiccionario.CrearABB[string, *int](strings.Compare)
 	clave := "Pez"
-	dic.Guardar(clave, nil)
-	require.True(t, dic.Pertenece(clave))
-	require.EqualValues(t, 1, dic.Cantidad())
-	require.EqualValues(t, (*int)(nil), dic.Obtener(clave))
-	require.EqualValues(t, (*int)(nil), dic.Borrar(clave))
-	require.False(t, dic.Pertenece(clave))
+	abb.Guardar(clave, nil)
+	require.True(t, abb.Pertenece(clave))
+	require.EqualValues(t, 1, abb.Cantidad())
+	require.EqualValues(t, (*int)(nil), abb.Obtener(clave))
+	require.EqualValues(t, (*int)(nil), abb.Borrar(clave))
+	require.False(t, abb.Pertenece(clave))
 }
 
-func TestCadenaLargaParticular(t *testing.T) {
-	t.Log("Se han visto casos problematicos al utilizar la funcion de hashing de K&R, por lo que " +
-		"se agrega una prueba con dicha funcion de hashing y una cadena muy larga")
-	// El caracter '~' es el de mayor valor en ASCII (126).
-	claves := make([]string, 10)
-	cadena := "%d~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" +
-		"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	dic := TDADiccionario.CrearHash[string, string]()
-	valores := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J"}
-	for i := 0; i < 10; i++ {
-		claves[i] = fmt.Sprintf(cadena, i)
-		dic.Guardar(claves[i], valores[i])
-	}
-	require.EqualValues(t, 10, dic.Cantidad())
-
-	ok := true
-	for i := 0; i < 10 && ok; i++ {
-		ok = dic.Obtener(claves[i]) == valores[i]
-	}
-
-	require.True(t, ok, "Obtener clave larga funciona")
-}
-
-func TestGuardarYBorrarRepetidasVeces(t *testing.T) {
+func TestGuardarYBorrarRepetidasVecesAbb(t *testing.T) {
 	t.Log("Esta prueba guarda y borra repetidas veces. Esto lo hacemos porque un error comun es no considerar " +
 		"los borrados para agrandar en un Hash Cerrado. Si no se agranda, muy probablemente se quede en un ciclo " +
 		"infinito")
 
-	dic := TDADiccionario.CrearHash[int, int]()
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 	for i := 0; i < 1000; i++ {
-		dic.Guardar(i, i)
-		require.True(t, dic.Pertenece(i))
-		dic.Borrar(i)
-		require.False(t, dic.Pertenece(i))
+		abb.Guardar(i, i)
+		require.True(t, abb.Pertenece(i))
+		abb.Borrar(i)
+		require.False(t, abb.Pertenece(i))
 	}
+
 }
 
-func buscar(clave string, claves []string) int {
-	for i, c := range claves {
-		if c == clave {
-			return i
-		}
-	}
-	return -1
-}
-
-func TestIteradorInternoClaves(t *testing.T) {
+// TEST DE ITERADORES
+func TestIteradorInternoClavesAbb(t *testing.T) {
 	t.Log("Valida que todas las claves sean recorridas (y una única vez) con el iterador interno")
 	clave1 := "Gato"
 	clave2 := "Perro"
 	clave3 := "Vaca"
 	claves := []string{clave1, clave2, clave3}
-	dic := TDADiccionario.CrearHash[string, *int]()
-	dic.Guardar(claves[0], nil)
-	dic.Guardar(claves[1], nil)
-	dic.Guardar(claves[2], nil)
+	abb := TDADiccionario.CrearABB[string, *int](strings.Compare)
+	abb.Guardar(claves[0], nil)
+	abb.Guardar(claves[1], nil)
+	abb.Guardar(claves[2], nil)
 
 	cs := []string{"", "", ""}
 	cantidad := 0
 	cantPtr := &cantidad
 
-	dic.Iterar(func(clave string, dato *int) bool {
+	abb.Iterar(func(clave string, dato *int) bool {
 		cs[cantidad] = clave
 		*cantPtr = *cantPtr + 1
 		return true
@@ -330,7 +265,7 @@ func TestIteradorInternoClaves(t *testing.T) {
 	require.NotEqualValues(t, cs[2], cs[1])
 }
 
-func TestIteradorInternoValores(t *testing.T) {
+func TestIteradorInternoValoresAbb(t *testing.T) {
 	t.Log("Valida que los datos sean recorridas correctamente (y una única vez) con el iterador interno")
 	clave1 := "Gato"
 	clave2 := "Perro"
@@ -338,16 +273,16 @@ func TestIteradorInternoValores(t *testing.T) {
 	clave4 := "Burrito"
 	clave5 := "Hamster"
 
-	dic := TDADiccionario.CrearHash[string, int]()
-	dic.Guardar(clave1, 6)
-	dic.Guardar(clave2, 2)
-	dic.Guardar(clave3, 3)
-	dic.Guardar(clave4, 4)
-	dic.Guardar(clave5, 5)
+	abb := TDADiccionario.CrearABB[string, int](strings.Compare)
+	abb.Guardar(clave1, 6)
+	abb.Guardar(clave2, 2)
+	abb.Guardar(clave3, 3)
+	abb.Guardar(clave4, 4)
+	abb.Guardar(clave5, 5)
 
 	factorial := 1
 	ptrFactorial := &factorial
-	dic.Iterar(func(_ string, dato int) bool {
+	abb.Iterar(func(_ string, dato int) bool {
 		*ptrFactorial *= dato
 		return true
 	})
@@ -355,28 +290,28 @@ func TestIteradorInternoValores(t *testing.T) {
 	require.EqualValues(t, 720, factorial)
 }
 
-func TestIteradorInternoValoresConBorrados(t *testing.T) {
-	t.Log("Valida que los datos sean recorridas correctamente (y una única vez) con el iterador interno, sin recorrer datos borrados")
-	clave0 := "Elefante"
-	clave1 := "Gato"
-	clave2 := "Perro"
-	clave3 := "Vaca"
-	clave4 := "Burrito"
-	clave5 := "Hamster"
+func TestIteradorInternoValoresConBorradosAbb(t *testing.T) {
+	t.Log("Valida que los datos sean recorridas correctamente (y una única vez) con el iterador interno")
+	clave0 := "Elefante" //
+	clave1 := "Gato"     //V
+	clave2 := "Perro"    //
+	clave3 := "Vaca"     //
+	clave4 := "Burrito"  //
+	clave5 := "Hamster"  //
 
-	dic := TDADiccionario.CrearHash[string, int]()
-	dic.Guardar(clave0, 7)
-	dic.Guardar(clave1, 6)
-	dic.Guardar(clave2, 2)
-	dic.Guardar(clave3, 3)
-	dic.Guardar(clave4, 4)
-	dic.Guardar(clave5, 5)
+	abb := TDADiccionario.CrearABB[string, int](strings.Compare)
+	abb.Guardar(clave0, 7)
+	abb.Guardar(clave1, 6)
+	abb.Guardar(clave2, 2)
+	abb.Guardar(clave3, 3)
+	abb.Guardar(clave4, 4)
+	abb.Guardar(clave5, 5)
 
-	dic.Borrar(clave0)
+	abb.Borrar(clave0)
 
 	factorial := 1
 	ptrFactorial := &factorial
-	dic.Iterar(func(_ string, dato int) bool {
+	abb.Iterar(func(_ string, dato int) bool {
 		*ptrFactorial *= dato
 		return true
 	})
@@ -384,8 +319,8 @@ func TestIteradorInternoValoresConBorrados(t *testing.T) {
 	require.EqualValues(t, 720, factorial)
 }
 
-func ejecutarPruebaVolumen(b *testing.B, n int) {
-	dic := TDADiccionario.CrearHash[string, int]()
+func ejecutarPruebaVolumenAbb(b *testing.B, n int) { //MODIFICAR
+	abb := TDADiccionario.CrearABB[string, int](strings.Compare)
 
 	claves := make([]string, n)
 	valores := make([]int, n)
@@ -394,44 +329,44 @@ func ejecutarPruebaVolumen(b *testing.B, n int) {
 	for i := 0; i < n; i++ {
 		valores[i] = i
 		claves[i] = fmt.Sprintf("%08d", i)
-		dic.Guardar(claves[i], valores[i])
+		abb.Guardar(claves[i], valores[i])
 	}
 
-	require.EqualValues(b, n, dic.Cantidad(), "La cantidad de elementos es incorrecta")
+	require.EqualValues(b, n, abb.Cantidad(), "La cantidad de elementos es incorrecta")
 
 	/* Verifica que devuelva los valores correctos */
 	ok := true
 	for i := 0; i < n; i++ {
-		ok = dic.Pertenece(claves[i])
+		ok = abb.Pertenece(claves[i])
 		if !ok {
 			break
 		}
-		ok = dic.Obtener(claves[i]) == valores[i]
+		ok = abb.Obtener(claves[i]) == valores[i]
 		if !ok {
 			break
 		}
 	}
 
 	require.True(b, ok, "Pertenece y Obtener con muchos elementos no funciona correctamente")
-	require.EqualValues(b, n, dic.Cantidad(), "La cantidad de elementos es incorrecta")
+	require.EqualValues(b, n, abb.Cantidad(), "La cantidad de elementos es incorrecta")
 
 	/* Verifica que borre y devuelva los valores correctos */
 	for i := 0; i < n; i++ {
-		ok = dic.Borrar(claves[i]) == valores[i]
+		ok = abb.Borrar(claves[i]) == valores[i]
 		if !ok {
 			break
 		}
-		ok = !dic.Pertenece(claves[i])
+		ok = !abb.Pertenece(claves[i])
 		if !ok {
 			break
 		}
 	}
 
 	require.True(b, ok, "Borrar muchos elementos no funciona correctamente")
-	require.EqualValues(b, 0, dic.Cantidad())
+	require.EqualValues(b, 0, abb.Cantidad())
 }
 
-func BenchmarkDiccionario(b *testing.B) {
+func BenchmarkDiccionarioAbb(b *testing.B) {
 	b.Log("Prueba de stress del Diccionario. Prueba guardando distinta cantidad de elementos (muy grandes), " +
 		"ejecutando muchas veces las pruebas para generar un benchmark. Valida que la cantidad " +
 		"sea la adecuada. Luego validamos que podemos obtener y ver si pertenece cada una de las claves geeneradas, " +
@@ -439,22 +374,22 @@ func BenchmarkDiccionario(b *testing.B) {
 	for _, n := range TAMS_VOLUMEN {
 		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				ejecutarPruebaVolumen(b, n)
+				ejecutarPruebaVolumenAbb(b, n)
 			}
 		})
 	}
 }
 
-func TestIterarDiccionarioVacio(t *testing.T) {
+func TestIterarDiccionarioVacioAbb(t *testing.T) {
 	t.Log("Iterar sobre diccionario vacio es simplemente tenerlo al final")
-	dic := TDADiccionario.CrearHash[string, int]()
-	iter := dic.Iterador()
+	abb := TDADiccionario.CrearABB[string, int](strings.Compare)
+	iter := abb.Iterador()
 	require.False(t, iter.HaySiguiente())
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.VerActual() })
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.Siguiente() })
 }
 
-func TestDiccionarioIterar(t *testing.T) {
+func TestDiccionarioIterarAbb(t *testing.T) {
 	t.Log("Guardamos 3 valores en un Diccionario, e iteramos validando que las claves sean todas diferentes " +
 		"pero pertenecientes al diccionario. Además los valores de VerActual y Siguiente van siendo correctos entre sí")
 	clave1 := "Gato"
@@ -465,11 +400,11 @@ func TestDiccionarioIterar(t *testing.T) {
 	valor3 := "moo"
 	claves := []string{clave1, clave2, clave3}
 	valores := []string{valor1, valor2, valor3}
-	dic := TDADiccionario.CrearHash[string, string]()
-	dic.Guardar(claves[0], valores[0])
-	dic.Guardar(claves[1], valores[1])
-	dic.Guardar(claves[2], valores[2])
-	iter := dic.Iterador()
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
+	abb.Guardar(claves[0], valores[0])
+	abb.Guardar(claves[1], valores[1])
+	abb.Guardar(claves[2], valores[2])
+	iter := abb.Iterador()
 
 	require.True(t, iter.HaySiguiente())
 	primero, _ := iter.VerActual()
@@ -495,18 +430,18 @@ func TestDiccionarioIterar(t *testing.T) {
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.Siguiente() })
 }
 
-func TestIteradorNoLlegaAlFinal(t *testing.T) {
+func TestIteradorNoLlegaAlFinalAbb(t *testing.T) {
 	t.Log("Crea un iterador y no lo avanza. Luego crea otro iterador y lo avanza.")
-	dic := TDADiccionario.CrearHash[string, string]()
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
 	claves := []string{"A", "B", "C"}
-	dic.Guardar(claves[0], "")
-	dic.Guardar(claves[1], "")
-	dic.Guardar(claves[2], "")
+	abb.Guardar(claves[0], "")
+	abb.Guardar(claves[1], "")
+	abb.Guardar(claves[2], "")
 
-	dic.Iterador()
-	iter2 := dic.Iterador()
+	abb.Iterador()
+	iter2 := abb.Iterador()
 	iter2.Siguiente()
-	iter3 := dic.Iterador()
+	iter3 := abb.Iterador()
 	primero, _ := iter3.VerActual()
 	iter3.Siguiente()
 	segundo, _ := iter3.VerActual()
@@ -522,7 +457,7 @@ func TestIteradorNoLlegaAlFinal(t *testing.T) {
 	require.NotEqualValues(t, -1, buscar(tercero, claves))
 }
 
-func TestPruebaIterarTrasBorrados(t *testing.T) {
+func TestPruebaIterarTrasBorradosAbb(t *testing.T) {
 	t.Log("Prueba de caja blanca: Esta prueba intenta verificar el comportamiento del hash abierto cuando " +
 		"queda con listas vacías en su tabla. El iterador debería ignorar las listas vacías, avanzando hasta " +
 		"encontrar un elemento real.")
@@ -531,20 +466,20 @@ func TestPruebaIterarTrasBorrados(t *testing.T) {
 	clave2 := "Perro"
 	clave3 := "Vaca"
 
-	dic := TDADiccionario.CrearHash[string, string]()
-	dic.Guardar(clave1, "")
-	dic.Guardar(clave2, "")
-	dic.Guardar(clave3, "")
-	dic.Borrar(clave1)
-	dic.Borrar(clave2)
-	dic.Borrar(clave3)
-	iter := dic.Iterador()
+	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
+	abb.Guardar(clave1, "")
+	abb.Guardar(clave2, "")
+	abb.Guardar(clave3, "")
+	abb.Borrar(clave1)
+	abb.Borrar(clave2)
+	abb.Borrar(clave3)
+	iter := abb.Iterador()
 
 	require.False(t, iter.HaySiguiente())
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.VerActual() })
 	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.Siguiente() })
-	dic.Guardar(clave1, "A")
-	iter = dic.Iterador()
+	abb.Guardar(clave1, "A")
+	iter = abb.Iterador()
 
 	require.True(t, iter.HaySiguiente())
 	c1, v1 := iter.VerActual()
@@ -554,8 +489,8 @@ func TestPruebaIterarTrasBorrados(t *testing.T) {
 	require.False(t, iter.HaySiguiente())
 }
 
-func ejecutarPruebasVolumenIterador(b *testing.B, n int) {
-	dic := TDADiccionario.CrearHash[string, *int]()
+func ejecutarPruebasVolumenIteradorAbb(b *testing.B, n int) {
+	abb := TDADiccionario.CrearABB[string, *int](strings.Compare)
 
 	claves := make([]string, n)
 	valores := make([]int, n)
@@ -564,11 +499,11 @@ func ejecutarPruebasVolumenIterador(b *testing.B, n int) {
 	for i := 0; i < n; i++ {
 		claves[i] = fmt.Sprintf("%08d", i)
 		valores[i] = i
-		dic.Guardar(claves[i], &valores[i])
+		abb.Guardar(claves[i], &valores[i])
 	}
 
 	// Prueba de iteración sobre las claves almacenadas.
-	iter := dic.Iterador()
+	iter := abb.Iterador()
 	require.True(b, iter.HaySiguiente())
 
 	ok := true
@@ -609,34 +544,34 @@ func ejecutarPruebasVolumenIterador(b *testing.B, n int) {
 	require.True(b, ok, "No se cambiaron todos los elementos")
 }
 
-func BenchmarkIterador(b *testing.B) {
+func BenchmarkIteradorAbb(b *testing.B) {
 	b.Log("Prueba de stress del Iterador del Diccionario. Prueba guardando distinta cantidad de elementos " +
 		"(muy grandes) b.N elementos, iterarlos todos sin problemas. Se ejecuta cada prueba b.N veces para generar " +
 		"un benchmark")
 	for _, n := range TAMS_VOLUMEN {
 		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
 			for i := 0; i < b.N; i++ {
-				ejecutarPruebasVolumenIterador(b, n)
+				ejecutarPruebasVolumenIteradorAbb(b, n)
 			}
 		})
 	}
 }
 
-func TestVolumenIteradorCorte(t *testing.T) {
+func TestVolumenIteradorCorteAbb(t *testing.T) {
 	t.Log("Prueba de volumen de iterador interno, para validar que siempre que se indique que se corte" +
 		" la iteración con la función visitar, se corte")
 
-	dic := TDADiccionario.CrearHash[int, int]()
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 
 	/* Inserta 'n' parejas en el hash */
 	for i := 0; i < 10000; i++ {
-		dic.Guardar(i, i)
+		abb.Guardar(i, i)
 	}
 
 	seguirEjecutando := true
 	siguioEjecutandoCuandoNoDebia := false
 
-	dic.Iterar(func(c int, v int) bool {
+	abb.Iterar(func(c int, v int) bool {
 		if !seguirEjecutando {
 			siguioEjecutandoCuandoNoDebia = true
 			return false
