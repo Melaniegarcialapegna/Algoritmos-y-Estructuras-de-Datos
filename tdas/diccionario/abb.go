@@ -293,3 +293,23 @@ func (iter *iteradorABB[K, V]) apilarIzquierdos(nodo *nodoAbb[K, V]) {
 		nodo = nodo.izquierdo
 	}
 }
+
+//FALTA
+
+//Falta: (test-ver si hay que poner mas)
+//	Dos primit. extras que hay q proar
+// Iteracion iterna y externa tienen que ser en orden -> no quiero ver si la clave es valida, quiero ver si es una clave espe
+//Iterar en orden tanto en el interno como en el externo
+//Pruebas de vol nos importa en que orden estamos guardando, hay que generar algun grado de desorden (Se puede usar math.random)
+//Revisar los de volumen
+//Revisar el orden de entrada (que no nos importa orden de entrada pero si el de salida)
+//El de rangos
+//Documentar test q hagamos
+
+//Codigo:
+//Codigo repetido
+//Ctes
+//Modular
+//Documentar nuestras func
+//Ser felices :)
+//Somos capos
