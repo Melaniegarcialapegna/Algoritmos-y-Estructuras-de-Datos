@@ -166,8 +166,7 @@ func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, funcion func(clave K, dato
 	abb.iterarRango(abb.raiz, desde, hasta, funcion)
 }
 
-//iterarRango es una funcion interna de IterarRango
-//CAMBIE x Fede
+//iterarRango es un wrapper de IterarRango
 func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funcion func(clave K, dato V) bool) bool {
 	if nodo == nil {
 		return true
@@ -203,7 +202,6 @@ func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	return iter
 }
 
-//ITERADOR EXTERNO
 //iteradorABB representa un iterador para el arbol binario de busqueda.
 type iteradorABB[K comparable, V any] struct {
 	arbol      *abb[K, V]
@@ -235,7 +233,7 @@ func (iter *iteradorABB[K, V]) Siguiente() {
 }
 
 
-// Funciones Auxiliares (las nuestras)
+// Funciones Auxiliares 
 
 //intercambiarIzquierdo asigna un hijo izquierdo a su padre.
 func intercambiarIzquierdo[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
