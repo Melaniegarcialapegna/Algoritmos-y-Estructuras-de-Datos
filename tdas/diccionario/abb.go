@@ -301,7 +301,7 @@ func (nodo *nodoAbb[K, V]) dosHijos() bool {
 //buscarReemplazante busca el nodo reemplazante para el nodo que queremos eliminar.
 func (abb *abb[K, V]) buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
 	var nodoPadre *nodoAbb[K, V] = nil
-	nodoReemplazo := nodo.derecho.izquierdo // el mas chiquito de la derecha
+	nodoReemplazo := nodo.derecho.izquierdo // el mas chico a la derecha del nodo
 	for nodoReemplazo != nil && nodoReemplazo.izquierdo != nil {
 		nodoPadre = nodoReemplazo
 		nodoReemplazo = nodoReemplazo.izquierdo
@@ -309,15 +309,14 @@ func (abb *abb[K, V]) buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
 	if nodoPadre == nil {
 		nodoReemplazo = nodo.derecho
 	}
-	abb.Borrar(nodoReemplazo.clave)
+	abb.Borrar(nodoReemplazo.clave) //Borramos el reemplazante
 	return nodoReemplazo
 }
 
 //apilarIzquierdos apila todos los nodos que se encuentren a la izquierda del nodo pasado por parametro.
 func (iter *iteradorABB[K, V]) apilarIzquierdos(nodo *nodoAbb[K, V]) {
-	//mientras haya nodo a la izq
-	for nodo != nil {
-		if (iter.desde == nil || iter.funcionCmp(*iter.desde, nodo.clave) <= 0) && (iter.hasta == nil || iter.funcionCmp(*iter.hasta, nodo.clave) >= 0) {
+	for nodo != nil {//Mientras haya un nodo a la izquierda
+		if (iter.desde == nil || iter.funcionCmp(*iter.desde, nodo.clave) <= 0) && (iter.hasta == nil || iter.funcionCmp(*iter.hasta, nodo.clave) >= 0) { //Si esta dentro del rango
 			iter.pila.Apilar(nodo)
 		} else if (iter.desde != nil) && (iter.funcionCmp(*iter.desde, nodo.clave) > 0) {
 			nodo = nodo.derecho
