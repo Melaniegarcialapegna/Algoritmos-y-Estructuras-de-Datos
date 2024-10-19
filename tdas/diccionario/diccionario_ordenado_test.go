@@ -249,12 +249,21 @@ func TestIteradorInternoClavesAbb(t *testing.T) {
 	})
 
 	require.EqualValues(t, 3, cantidad)
-	require.NotEqualValues(t, -1, buscar(cs[0], claves))
-	require.NotEqualValues(t, -1, buscar(cs[1], claves))
-	require.NotEqualValues(t, -1, buscar(cs[2], claves))
+	require.NotEqualValues(t, -1, buscarAbb(cs[0], claves))
+	require.NotEqualValues(t, -1, buscarAbb(cs[1], claves))
+	require.NotEqualValues(t, -1, buscarAbb(cs[2], claves))
 	require.NotEqualValues(t, cs[0], cs[1])
 	require.NotEqualValues(t, cs[0], cs[2])
 	require.NotEqualValues(t, cs[2], cs[1])
+}
+
+func buscarAbb(clave string, claves []string) int {
+	for i, c := range claves {
+		if c == clave {
+			return i
+		}
+	}
+	return -1
 }
 
 func TestIteradorInternoValoresAbb(t *testing.T) {
@@ -386,20 +395,20 @@ func TestDiccionarioIterarAbb(t *testing.T) {
 
 	require.True(t, iter.HaySiguiente())
 	primero, _ := iter.VerActual()
-	require.NotEqualValues(t, -1, buscar(primero, claves))
+	require.NotEqualValues(t, -1, buscarAbb(primero, claves))
 
 	iter.Siguiente()
 	segundo, segundo_valor := iter.VerActual()
-	require.NotEqualValues(t, -1, buscar(segundo, claves))
+	require.NotEqualValues(t, -1, buscarAbb(segundo, claves))
 	require.True(t, segundo > primero, "El iterador no itero en el orden correcto")
-	require.EqualValues(t, valores[buscar(segundo, claves)], segundo_valor)
+	require.EqualValues(t, valores[buscarAbb(segundo, claves)], segundo_valor)
 	require.NotEqualValues(t, primero, segundo)
 	require.True(t, iter.HaySiguiente())
 
 	iter.Siguiente()
 	require.True(t, iter.HaySiguiente())
 	tercero, _ := iter.VerActual()
-	require.NotEqualValues(t, -1, buscar(tercero, claves))
+	require.NotEqualValues(t, -1, buscarAbb(tercero, claves))
 	require.True(t, tercero > segundo, "El iterador no itero en el orden correcto")
 	require.NotEqualValues(t, primero, tercero)
 	require.NotEqualValues(t, segundo, tercero)
@@ -432,9 +441,9 @@ func TestIteradorNoLlegaAlFinalAbb(t *testing.T) {
 	require.NotEqualValues(t, primero, segundo)
 	require.NotEqualValues(t, tercero, segundo)
 	require.NotEqualValues(t, primero, tercero)
-	require.NotEqualValues(t, -1, buscar(primero, claves))
-	require.NotEqualValues(t, -1, buscar(segundo, claves))
-	require.NotEqualValues(t, -1, buscar(tercero, claves))
+	require.NotEqualValues(t, -1, buscarAbb(primero, claves))
+	require.NotEqualValues(t, -1, buscarAbb(segundo, claves))
+	require.NotEqualValues(t, -1, buscarAbb(tercero, claves))
 }
 
 func TestEjecutarPruebasVolumenIteradorAbb(t *testing.T) {
