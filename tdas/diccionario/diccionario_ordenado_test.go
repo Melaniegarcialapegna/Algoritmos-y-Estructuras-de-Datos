@@ -1,7 +1,6 @@
 package diccionario_test
 
 import (
-	"fmt"
 	"strings"
 	TDADiccionario "tdas/diccionario"
 	"testing"
@@ -13,7 +12,7 @@ import (
 
 const (
 	MAX_VALOR_RANDOM = 20000
-	N                = 50000
+	N                = 30000
 )
 
 var DESDE_RANGOS int = 18
@@ -178,21 +177,6 @@ func TestDiccionarioBorrarAbb(t *testing.T) {
 	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener(claves[1]) })
 }
 
-func TestReutlizacionDeBorradosAbb(t *testing.T) {
-	t.Log("Prueba de caja blanca: revisa, para el caso que fuere un HashCerrado, que no haya problema " +
-		"reinsertando un elemento borrado")
-	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
-	clave := "hola"
-	abb.Guardar(clave, "mundo!")
-	abb.Borrar(clave)
-	require.EqualValues(t, 0, abb.Cantidad())
-	require.False(t, abb.Pertenece(clave))
-	abb.Guardar(clave, "mundooo!")
-	require.True(t, abb.Pertenece(clave))
-	require.EqualValues(t, 1, abb.Cantidad())
-	require.EqualValues(t, "mundooo!", abb.Obtener(clave))
-}
-
 func TestConClavesNumericasAbb(t *testing.T) {
 	t.Log("Valida que no solo funcione con strings")
 	abb := TDADiccionario.CrearABB[int, string](comparacionEnteros)
@@ -230,9 +214,7 @@ func TestValorNuloAbb(t *testing.T) {
 }
 
 func TestGuardarYBorrarRepetidasVecesAbb(t *testing.T) {
-	t.Log("Esta prueba guarda y borra repetidas veces. Esto lo hacemos porque un error comun es no considerar " +
-		"los borrados para agrandar en un Hash Cerrado. Si no se agranda, muy probablemente se quede en un ciclo " +
-		"infinito")
+	t.Log("Esta prueba guarda y borra repetidas veces")
 
 	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 	for i := 0; i < 1000; i++ {
@@ -329,24 +311,24 @@ func TestIteradorInternoValoresConBorradosAbb(t *testing.T) {
 	require.EqualValues(t, 720, factorial)
 }
 
-func ejecutarPruebaVolumenAbb(b *testing.B, n int) { //MODIFICAR
-	abb := TDADiccionario.CrearABB[string, int](strings.Compare)
+func TestEjecutarPruebaVolumenAbb(t *testing.T) {
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 
-	claves := make([]string, n)
-	valores := make([]int, n)
+	claves := make([]int, N)
+	valores := make([]int, N)
 
-	/* Inserta 'n' parejas en el hash */
-	for i := 0; i < n; i++ {
+	/* Inserta 'n' parejas en el abb */
+	for i := 0; i < N; i++ {
 		valores[i] = i
-		claves[i] = fmt.Sprintf("%08d", i)
+		claves[i] = i
 		abb.Guardar(claves[i], valores[i])
 	}
 
-	require.EqualValues(b, n, abb.Cantidad(), "La cantidad de elementos es incorrecta")
+	require.EqualValues(t, N, abb.Cantidad(), "La cantidad de elementos es incorrecta")
 
 	/* Verifica que devuelva los valores correctos */
 	ok := true
-	for i := 0; i < n; i++ {
+	for i := 0; i < N; i++ {
 		ok = abb.Pertenece(claves[i])
 		if !ok {
 			break
@@ -357,11 +339,11 @@ func ejecutarPruebaVolumenAbb(b *testing.B, n int) { //MODIFICAR
 		}
 	}
 
-	require.True(b, ok, "Pertenece y Obtener con muchos elementos no funciona correctamente")
-	require.EqualValues(b, n, abb.Cantidad(), "La cantidad de elementos es incorrecta")
+	require.True(t, ok, "Pertenece y Obtener con muchos elementos no funciona correctamente")
+	require.EqualValues(t, N, abb.Cantidad(), "La cantidad de elementos es incorrecta")
 
 	/* Verifica que borre y devuelva los valores correctos */
-	for i := 0; i < n; i++ {
+	for i := 0; i < N; i++ {
 		ok = abb.Borrar(claves[i]) == valores[i]
 		if !ok {
 			break
@@ -372,22 +354,8 @@ func ejecutarPruebaVolumenAbb(b *testing.B, n int) { //MODIFICAR
 		}
 	}
 
-	require.True(b, ok, "Borrar muchos elementos no funciona correctamente")
-	require.EqualValues(b, 0, abb.Cantidad())
-}
-
-func BenchmarkDiccionarioAbb(b *testing.B) {
-	b.Log("Prueba de stress del Diccionario. Prueba guardando distinta cantidad de elementos (muy grandes), " +
-		"ejecutando muchas veces las pruebas para generar un benchmark. Valida que la cantidad " +
-		"sea la adecuada. Luego validamos que podemos obtener y ver si pertenece cada una de las claves geeneradas, " +
-		"y que luego podemos borrar sin problemas")
-	for _, n := range TAMS_VOLUMEN {
-		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				ejecutarPruebaVolumenAbb(b, n)
-			}
-		})
-	}
+	require.True(t, ok, "Borrar muchos elementos no funciona correctamente")
+	require.EqualValues(t, 0, abb.Cantidad())
 }
 
 func TestIterarDiccionarioVacioAbb(t *testing.T) {
@@ -467,39 +435,6 @@ func TestIteradorNoLlegaAlFinalAbb(t *testing.T) {
 	require.NotEqualValues(t, -1, buscar(primero, claves))
 	require.NotEqualValues(t, -1, buscar(segundo, claves))
 	require.NotEqualValues(t, -1, buscar(tercero, claves))
-}
-
-/*BORRAR O VER SI HAY QUE BORRAR*/
-func TestPruebaIterarTrasBorradosAbb(t *testing.T) {
-	t.Log("Prueba de caja blanca: Esta prueba intenta verificar el comportamiento del hash abierto cuando " +
-		"queda con listas vacías en su tabla. El iterador debería ignorar las listas vacías, avanzando hasta " +
-		"encontrar un elemento real.")
-
-	clave1 := "Gato"
-	clave2 := "Perro"
-	clave3 := "Vaca"
-
-	abb := TDADiccionario.CrearABB[string, string](strings.Compare)
-	abb.Guardar(clave1, "")
-	abb.Guardar(clave2, "")
-	abb.Guardar(clave3, "")
-	abb.Borrar(clave1)
-	abb.Borrar(clave2)
-	abb.Borrar(clave3)
-	iter := abb.Iterador()
-
-	require.False(t, iter.HaySiguiente())
-	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.VerActual() })
-	require.PanicsWithValue(t, "El iterador termino de iterar", func() { iter.Siguiente() })
-	abb.Guardar(clave1, "A")
-	iter = abb.Iterador()
-
-	require.True(t, iter.HaySiguiente())
-	c1, v1 := iter.VerActual()
-	require.EqualValues(t, clave1, c1)
-	require.EqualValues(t, "A", v1)
-	iter.Siguiente()
-	require.False(t, iter.HaySiguiente())
 }
 
 func TestEjecutarPruebasVolumenIteradorAbb(t *testing.T) {

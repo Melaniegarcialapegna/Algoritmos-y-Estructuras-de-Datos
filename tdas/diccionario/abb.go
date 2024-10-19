@@ -4,6 +4,9 @@ import (
 	TDAPila "tdas/pila"
 )
 
+const ()
+
+// nodoAbb es la implementacion de un nodo de un ABB.
 type nodoAbb[K comparable, V any] struct {
 	izquierdo *nodoAbb[K, V]
 	derecho   *nodoAbb[K, V]
@@ -11,17 +14,19 @@ type nodoAbb[K comparable, V any] struct {
 	dato      V
 }
 
+// abb es la implementacion de un Arbol Binario de Busqueda.
 type abb[K comparable, V any] struct {
 	raiz     *nodoAbb[K, V]
 	cantidad int
 	cmp      func(K, K) int
 }
 
+// crearNodoAbb crea y devuelve un nodoAbb.
 func crearNodoAbb[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
 	return &nodoAbb[K, V]{izquierdo: nil, derecho: nil, clave: clave, dato: dato}
 }
 
-// InOrder -> prim izq desp yo desp der
+// CrearABB crea y devuelve un diccionario implementado con un abb
 func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdenado[K, V] {
 	return &abb[K, V]{raiz: nil, cantidad: 0, cmp: funcion_cmp}
 }
@@ -33,6 +38,7 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 		abb.cantidad++
 		return
 	}
+
 	nodoPadre, nodo, encontrado := abb.buscarElemento(clave)
 	if !encontrado {
 		condicion := abb.cmp(nodoPadre.clave, clave)
@@ -79,6 +85,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	}
 
 	dato := nodoActual.dato
+	//Si la clave que queremos borrar es raiz
 	if nodoActual.clave == abb.raiz.clave {
 		if nodoActual.esHoja() {
 			abb.raiz = nil
@@ -104,17 +111,9 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 		}
 	} else if nodoActual.unHijo() {
 		if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
-			if nodoActual.izquierdo != nil {
-				nodoPadre.izquierdo = nodoActual.izquierdo
-			} else {
-				nodoPadre.izquierdo = nodoActual.derecho
-			}
+			borrarUnHijo(nodoPadre, nodoActual, intercambiarIzquierdo)
 		} else {
-			if nodoActual.izquierdo != nil {
-				nodoPadre.derecho = nodoActual.izquierdo
-			} else {
-				nodoPadre.derecho = nodoActual.derecho
-			}
+			borrarUnHijo(nodoPadre, nodoActual, intercambiarDerecho)
 		}
 	} else { //Si tengo dos hijitos
 		nodoReemplazo := abb.buscarReemplazante(nodoActual)
@@ -130,6 +129,22 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 
 	abb.cantidad--
 	return dato
+}
+
+func intercambiarIzquierdo[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
+	padre.izquierdo = hijo
+}
+
+func intercambiarDerecho[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
+	padre.derecho = hijo
+}
+
+func borrarUnHijo[K comparable, V any](nodoPadre, nodoActual *nodoAbb[K, V], intercambiarHijo func(*nodoAbb[K, V], *nodoAbb[K, V])) {
+	if nodoActual.izquierdo == nil {
+		intercambiarHijo(nodoPadre, nodoActual.derecho)
+	} else {
+		intercambiarHijo(nodoPadre, nodoActual.izquierdo)
+	}
 }
 
 func (abb *abb[K, V]) Cantidad() int {
