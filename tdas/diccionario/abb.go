@@ -39,8 +39,7 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 
 	nodoPadre, nodo, encontrado := abb.buscarElemento(clave)
 	if !encontrado {
-		condicion := abb.cmp(nodoPadre.clave, clave)
-		if condicion > 0 {
+		if abb.cmp(nodoPadre.clave, clave) > 0 {
 			nodoPadre.izquierdo = nodoNuevo
 		} else {
 			nodoPadre.derecho = nodoNuevo
@@ -93,6 +92,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 			nodoActual.clave = nodoReemplazo.clave
 			nodoActual.dato = nodoReemplazo.dato
 		}
+		abb.cantidad++
 
 	} else if nodoActual.clave == abb.raiz.clave { //Si es raiz y tiene uno o ningun hijo
 		if nodoActual.esHoja() { //Si es raiz y NO tiene hinos
@@ -170,7 +170,7 @@ func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funci
 		}
 	}
 
-	if abb.cmp(nodo.clave, *desde) >= 0 && abb.cmp(nodo.clave, *hasta) <= 0 { //Si el nodo esta dentro del rango que queremos iterar
+	if (abb.cmp(nodo.clave, *desde) >= 0) && (abb.cmp(nodo.clave, *hasta) <= 0) { //Si el nodo esta dentro del rango que queremos iterar
 		if !funcion(nodo.clave, nodo.dato) { //Le aplicamos la funcion al nodo
 			return false
 		}
@@ -188,7 +188,7 @@ func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funci
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	pila := TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()
 	iter := &iteradorABB[K, V]{arbol: abb, pila: pila, funcionCmp: abb.cmp, desde: desde, hasta: hasta}
-	if abb.cantidad != 0 {
+	if abb.cantidad > 0 {
 		iter.apilarIzquierdos(abb.raiz)
 	}
 	return iter
@@ -263,10 +263,8 @@ func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K
 		return abb.buscarNodo(nodoActual, nodoActual.derecho, clave)
 	} else if condicion == 0 { //clave = nodo
 		return nodoPadre, nodoActual, true
-	} else if nodoActual.izquierdo == nil && nodoActual.derecho == nil { //Si estamos en una hoja
-		return nodoPadre, nodoActual, false
 	}
-	return nil, nil, false
+	return nil, nil, true
 }
 
 // esHoja devuelve TRUE si el nodo NO tiene hijos.
@@ -286,14 +284,9 @@ func (nodo *nodoAbb[K, V]) dosHijos() bool {
 
 // buscarReemplazante busca el nodo reemplazante para el nodo que queremos eliminar.
 func (abb *abb[K, V]) buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
-	var nodoPadre *nodoAbb[K, V] = nil
-	nodoReemplazo := nodo.derecho.izquierdo // el mas chico a la derecha del nodo
-	for nodoReemplazo != nil && nodoReemplazo.izquierdo != nil {
-		nodoPadre = nodoReemplazo
+	nodoReemplazo := nodo.derecho // el mas chico a la derecha del nodo
+	for nodoReemplazo.izquierdo != nil {
 		nodoReemplazo = nodoReemplazo.izquierdo
-	}
-	if nodoPadre == nil {
-		nodoReemplazo = nodo.derecho
 	}
 	abb.Borrar(nodoReemplazo.clave) //Borramos el reemplazante
 	return nodoReemplazo
@@ -304,8 +297,10 @@ func (iter *iteradorABB[K, V]) apilarIzquierdos(nodo *nodoAbb[K, V]) {
 	for nodo != nil { //Mientras haya un nodo a la izquierda
 		if (iter.desde == nil || iter.funcionCmp(*iter.desde, nodo.clave) <= 0) && (iter.hasta == nil || iter.funcionCmp(*iter.hasta, nodo.clave) >= 0) { //Si esta dentro del rango
 			iter.pila.Apilar(nodo)
-		} else if (iter.desde != nil) && (iter.funcionCmp(*iter.desde, nodo.clave) > 0) {
+		}
+		if (iter.desde != nil) && (iter.funcionCmp(*iter.desde, nodo.clave) > 0) {
 			nodo = nodo.derecho
+			continue
 		}
 		nodo = nodo.izquierdo
 	}

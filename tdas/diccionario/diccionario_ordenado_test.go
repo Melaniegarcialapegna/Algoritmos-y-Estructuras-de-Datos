@@ -17,6 +17,9 @@ const (
 
 var DESDE_RANGOS int = 18
 var HASTA_RANGOS int = 82
+var desdeNuevo int = 7
+var hastaNuevo int = 30
+var arbolEspecifico []int = []int{24, 18, 22, 20, 10, 26, 28}
 
 func comparacionEnteros(a, b int) int {
 	return a - b
@@ -54,6 +57,7 @@ func TestUnElementAbb(t *testing.T) {
 	require.False(t, abb.Pertenece("B"))
 	require.EqualValues(t, 10, abb.Obtener("A"))
 	require.PanicsWithValue(t, "La clave no pertenece al diccionario", func() { abb.Obtener("B") })
+	require.EqualValues(t, 1, abb.Cantidad(), "La cantidad de elementos es incorrecta")
 }
 
 func TestDiccionarioGuardarAbb(t *testing.T) {
@@ -220,8 +224,10 @@ func TestGuardarYBorrarRepetidasVecesAbb(t *testing.T) {
 	for i := 0; i < 1000; i++ {
 		abb.Guardar(i, i)
 		require.True(t, abb.Pertenece(i))
+		require.EqualValues(t, 1, abb.Cantidad())
 		abb.Borrar(i)
 		require.False(t, abb.Pertenece(i))
+		require.EqualValues(t, 0, abb.Cantidad())
 	}
 
 }
@@ -354,6 +360,7 @@ func TestEjecutarPruebaVolumenAbb(t *testing.T) {
 	/* Verifica que borre y devuelva los valores correctos */
 	for i := 0; i < N; i++ {
 		ok = abb.Borrar(claves[i]) == valores[i]
+		require.Equal(t, N-1-i, abb.Cantidad(), "La cantidad de elementos es incorrecta")
 		if !ok {
 			break
 		}
@@ -492,7 +499,7 @@ func TestVolumenIteradorCorteAbb(t *testing.T) {
 	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 
 	/* Inserta 'n' parejas en el abb */
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < N; i++ {
 		abb.Guardar(i, i)
 	}
 
@@ -520,13 +527,9 @@ func TestIteradorCorteAbb(t *testing.T) {
 	t.Log("Verifica que no se hagan iteraciones de mas en distintos puntos de corte.")
 	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 
-	abb.Guardar(24, 1)
-	abb.Guardar(18, 2)
-	abb.Guardar(22, 3)
-	abb.Guardar(20, 4)
-	abb.Guardar(10, 5)
-	abb.Guardar(26, 6)
-	abb.Guardar(28, 7)
+	for i := 0; i < len(arbolEspecifico); i++ {
+		abb.Guardar(arbolEspecifico[i], i+1)
+	}
 
 	seguirEjecutando := true
 	siguioEjecutandoCuandoNoDebia := false
@@ -587,13 +590,9 @@ func TestIteradorCorteAbb(t *testing.T) {
 func TestIteradorInternoSuma(t *testing.T) {
 	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 
-	abb.Guardar(24, 1)
-	abb.Guardar(18, 2)
-	abb.Guardar(22, 3)
-	abb.Guardar(20, 4)
-	abb.Guardar(10, 5)
-	abb.Guardar(26, 6)
-	abb.Guardar(28, 7)
+	for i := 0; i < len(arbolEspecifico); i++ {
+		abb.Guardar(arbolEspecifico[i], i+1)
+	}
 
 	suma := 0
 	abb.Iterar(func(clave int, dato int) bool {
@@ -607,13 +606,9 @@ func TestIteradorInternoRangosSuma(t *testing.T) {
 	t.Log("Corrobora que el iterador interno funciona bien al hacer operaciones con los valores iterados")
 	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 
-	abb.Guardar(24, 1)
-	abb.Guardar(18, 2)
-	abb.Guardar(22, 3)
-	abb.Guardar(20, 4)
-	abb.Guardar(10, 5)
-	abb.Guardar(26, 6)
-	abb.Guardar(28, 7)
+	for i := 0; i < len(arbolEspecifico); i++ {
+		abb.Guardar(arbolEspecifico[i], i+1)
+	}
 
 	suma := 0
 	iteroFueraDeRango := false
@@ -663,4 +658,42 @@ func TestVolumenIteradorExternoRangos(t *testing.T) {
 		}
 	}
 	require.False(t, iteroFueraDeRango, "ERROR")
+}
+
+func TestRamaIzquierdaSinHijosDerechos(t *testing.T) {
+	t.Log("Corrobora que al recorrer por rangos un arbol que solo tiene una rama izquierda sin ningun hijo derecho" +
+		"no haya ningun salto a un nodo izquierdo de un nodo derecho que no existe")
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+	abb.Guardar(20, 20)
+	abb.Guardar(10, 20)
+	abb.Guardar(5, 20)
+	require.EqualValues(t, 3, abb.Cantidad())
+
+	iteroFueraDeRango := false
+	for iter := abb.IteradorRango(&desdeNuevo, &hastaNuevo); iter.HaySiguiente(); iter.Siguiente() {
+		clave, _ := iter.VerActual()
+		if clave < desdeNuevo || clave > hastaNuevo {
+			iteroFueraDeRango = true
+		}
+	}
+	require.False(t, iteroFueraDeRango, "ERROR")
+}
+
+func TestAgregarClaveBorrada(t *testing.T) {
+	t.Log("Corrobora que al recorrer por rangos un arbol que solo tiene una rama izquierda sin ningun hijo derecho" +
+		"no haya ningun salto a un nodo izquierdo de un nodo derecho que no existe")
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+	arbolRamaIzquierdaSinDerechos := []int{10, 5, 15, 12, 13, 17}
+
+	for i, el := range arbolRamaIzquierdaSinDerechos {
+		abb.Guardar(el, i)
+	}
+
+	require.True(t, abb.Pertenece(10))
+	abb.Borrar(10)
+	require.False(t, abb.Pertenece(10))
+	abb.Guardar(10, 3)
+	require.True(t, abb.Pertenece(10))
+	require.EqualValues(t, 3, abb.Obtener(10))
+
 }
