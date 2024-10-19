@@ -85,9 +85,9 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	if !encontrado {
 		panic("La clave no pertenece al diccionario")
 	}
-
 	dato := nodoActual.dato
-	if nodoActual.dosHijos() {
+
+	if nodoActual.dosHijos() { //Si tiene dos hijos
 		nodoReemplazo := abb.buscarReemplazante(nodoActual) //Buscamos un reemplazante para el nodo que queremos eliminar
 		if nodoActual.clave == abb.raiz.clave { //Si es raiz y tiene dos hijos
 			abb.raiz.clave = nodoReemplazo.clave
@@ -97,20 +97,18 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 			nodoActual.clave = nodoReemplazo.clave
 			nodoActual.dato = nodoReemplazo.dato
 		}
+
 	} else if nodoActual.clave == abb.raiz.clave{ //Si es raiz y tiene uno o ningun hijo
 		if nodoActual.esHoja() {//Si es raiz y NO tiene hinos
 			abb.raiz = nil
-			abb.cantidad--
-			return dato
 		} else if nodoActual.unHijo() { //Si es raiz y tiene un hijo
 			if nodoActual.izquierdo != nil {
 				abb.raiz = nodoActual.izquierdo
 			} else {
 				abb.raiz = nodoActual.derecho
 			}
-			abb.cantidad-- //ACA SIGUE REPETIDO ESTO
-			return dato
 		}
+
 	} else{ //Si NO es raiz
 		if nodoActual.esHoja() { //Si no tiene hijos
 			if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
