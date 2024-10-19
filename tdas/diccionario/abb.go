@@ -6,7 +6,7 @@ import (
 
 const ()
 
-// nodoAbb es la implementacion de un nodo de un ABB.
+// nodoAbb representa un nodo del arbol binario de busqueda.
 type nodoAbb[K comparable, V any] struct {
 	izquierdo *nodoAbb[K, V]
 	derecho   *nodoAbb[K, V]
@@ -14,14 +14,14 @@ type nodoAbb[K comparable, V any] struct {
 	dato      V
 }
 
-// abb es la implementacion de un Arbol Binario de Busqueda.
+// abb es la implementacion de un arbol binario de busqueda.
 type abb[K comparable, V any] struct {
 	raiz     *nodoAbb[K, V]
 	cantidad int
 	cmp      func(K, K) int
 }
 
-// crearNodoAbb crea y devuelve un nodoAbb.
+// crearNodoAbb crea y devuelve un nuevo nodoAbb.
 func crearNodoAbb[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
 	return &nodoAbb[K, V]{izquierdo: nil, derecho: nil, clave: clave, dato: dato}
 }
@@ -49,7 +49,7 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 		}
 		abb.cantidad++
 	} else {
-		nodo.dato = dato
+		nodo.dato = dato //Si la clave ya existe actualiza el dato
 	}
 }
 
@@ -86,7 +86,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 
 	dato := nodoActual.dato
 	if nodoActual.dosHijos() {
-		nodoReemplazo := abb.buscarReemplazante(nodoActual)
+		nodoReemplazo := abb.buscarReemplazante(nodoActual) //Buscamos un reemplazante para el nodo que queremos eliminar
 		if nodoActual.clave == abb.raiz.clave { //Si es raiz y tiene dos hijos
 			abb.raiz.clave = nodoReemplazo.clave
 			abb.raiz.dato = nodoReemplazo.dato
@@ -106,7 +106,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 			} else {
 				abb.raiz = nodoActual.derecho
 			}
-			abb.cantidad--
+			abb.cantidad-- //ACA SIGUE REPETIDO ESTO
 			return dato
 		}
 	} else{ //Si NO es raiz
@@ -129,32 +129,11 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	return dato
 }
 
-//intercambiarIzquierdo es un criterio que 
-func intercambiarIzquierdo[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
-	padre.izquierdo = hijo
-}
-
-func intercambiarDerecho[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
-	padre.derecho = hijo
-}
-
-func borrarUnHijo[K comparable, V any](nodoPadre, nodoActual *nodoAbb[K, V], intercambiarHijo func(*nodoAbb[K, V], *nodoAbb[K, V])) {
-	if nodoActual.izquierdo == nil {
-		intercambiarHijo(nodoPadre, nodoActual.derecho)
-	} else {
-		intercambiarHijo(nodoPadre, nodoActual.izquierdo)
-	}
-}
-
 func (abb *abb[K, V]) Cantidad() int {
 	return abb.cantidad
 }
 
 func (abb *abb[K, V]) Iterar(funcion func(clave K, dato V) bool) {
-	//iteramos in order
-	//izq
-	//yo
-	//der
 	abb.iterar(abb.raiz, funcion)
 }
 
@@ -176,6 +155,7 @@ func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
 	return abb.IteradorRango(nil, nil)
 }
 
+//iteradorABB representa un iterador para el arbol binario de busqueda.
 type iteradorABB[K comparable, V any] struct {
 	arbol      *abb[K, V]
 	pila       TDAPila.Pila[*nodoAbb[K, V]]
@@ -184,20 +164,19 @@ type iteradorABB[K comparable, V any] struct {
 	hasta      *K
 }
 
-// Iterador Rango
-
-// interno rangos
+// Iterador interno por rangos
 func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, funcion func(clave K, dato V) bool) {
 	abb.iterarRango(abb.raiz, desde, hasta, funcion)
 }
 
+//iterarRango es una funcion interna de IterarRango
+//PONER TODO EN UNA SOLA LINEA???????
 func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funcion func(clave K, dato V) bool) bool {
 	if nodo == nil {
 		return true
 	}
-	// Vemos si el nodo actual es mayor a DESDE(inicio)
 
-	if abb.cmp(nodo.clave, *desde) > 0 {
+	if abb.cmp(nodo.clave, *desde) > 0 {// Si el nodo es mayor a DESDE
 		seguirIzq := abb.iterarRango(nodo.izquierdo, desde, hasta, funcion)
 		if !seguirIzq {
 			return false
@@ -205,7 +184,7 @@ func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funci
 	}
 
 	if abb.cmp(nodo.clave, *desde) >= 0 && abb.cmp(nodo.clave, *hasta) <= 0 {
-		if !funcion(nodo.clave, nodo.dato) { //:) Le aplico la fun al nodo y si dev FALSO termmino de iterar
+		if !funcion(nodo.clave, nodo.dato) { //Le aplicamos la funcion al nodo
 			return false
 		}
 	}
@@ -219,7 +198,7 @@ func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funci
 	return true
 }
 
-// externo rangos
+// Iterador externo por rangos
 func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	pila := TDAPila.CrearPilaDinamica[*nodoAbb[K, V]]()
 	iter := &iteradorABB[K, V]{arbol: abb, pila: pila, funcionCmp: abb.cmp, desde: desde, hasta: hasta}
@@ -250,11 +229,33 @@ func (iter *iteradorABB[K, V]) Siguiente() {
 	iter.apilarIzquierdos(actual.derecho)
 }
 
-// Nuestras funcion
+// Funciones Auxiliares (las nuestras)
+
+//intercambiarIzquierdo asigna un hijo izquierdo a su padre.
+func intercambiarIzquierdo[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
+	padre.izquierdo = hijo
+}
+
+//intercambiarDerecho asigna un hijo derecho a su padre.
+func intercambiarDerecho[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
+	padre.derecho = hijo
+}
+
+//borrarUnHijo maneja las eliminaciones de nodos que tienen un solo hijo
+func borrarUnHijo[K comparable, V any](nodoPadre, nodoActual *nodoAbb[K, V], intercambiarHijo func(*nodoAbb[K, V], *nodoAbb[K, V])) {
+	if nodoActual.izquierdo == nil {
+		intercambiarHijo(nodoPadre, nodoActual.derecho)
+	} else {
+		intercambiarHijo(nodoPadre, nodoActual.izquierdo)
+	}
+}
+
+//buscarElemento busca un nodo por su clave y devuelve su padre, el nodo y un bool que indica si encontro la clave.
 func (abb *abb[K, V]) buscarElemento(clave K) (*nodoAbb[K, V], *nodoAbb[K, V], bool) {
 	return abb.buscarNodo(nil, abb.raiz, clave)
 }
 
+//buscarNodo es una funcion interna de buscarElemento, busca la clave de forma recursiva. 
 func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K, V], clave K) (*nodoAbb[K, V], *nodoAbb[K, V], bool) {
 	//Caso Base
 	if nodoActual == nil {
@@ -274,18 +275,22 @@ func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K
 	return nil, nil, false
 }
 
+//esHoja devuelve TRUE si el nodo NO tiene hijos.
 func (nodo *nodoAbb[K, V]) esHoja() bool {
 	return nodo.izquierdo == nil && nodo.derecho == nil
 }
 
+//unHijo devuelve TRUE si el nodo tiene solo UN hijo.
 func (nodo *nodoAbb[K, V]) unHijo() bool {
 	return (nodo.izquierdo != nil && nodo.derecho == nil) || (nodo.izquierdo == nil && nodo.derecho != nil)
 }
 
+//unHijo devuelve TRUE si el nodo tiene DOS hijos.
 func (nodo *nodoAbb[K, V]) dosHijos() bool {
 	return nodo.izquierdo != nil && nodo.derecho != nil
 }
 
+//buscarReemplazante busca el nodo reemplazante para el nodo que queremos eliminar.
 func (abb *abb[K, V]) buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
 	var nodoPadre *nodoAbb[K, V] = nil
 	nodoReemplazo := nodo.derecho.izquierdo // el mas chiquito de la derecha
@@ -300,6 +305,7 @@ func (abb *abb[K, V]) buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
 	return nodoReemplazo
 }
 
+//apilarIzquierdos apila todos los nodos que se encuentren a la izquierda del nodo pasado por parametro.
 func (iter *iteradorABB[K, V]) apilarIzquierdos(nodo *nodoAbb[K, V]) {
 	//mientras haya nodo a la izq
 	for nodo != nil {
