@@ -85,13 +85,22 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	}
 
 	dato := nodoActual.dato
-	//Si la clave que queremos borrar es raiz
-	if nodoActual.clave == abb.raiz.clave {
-		if nodoActual.esHoja() {
+	if nodoActual.dosHijos() {
+		nodoReemplazo := abb.buscarReemplazante(nodoActual)
+		if nodoActual.clave == abb.raiz.clave { //Si es raiz y tiene dos hijos
+			abb.raiz.clave = nodoReemplazo.clave
+			abb.raiz.dato = nodoReemplazo.dato
+		} else {//Si tiene dos hijos y NO es raiz
+			dato = nodoActual.dato
+			nodoActual.clave = nodoReemplazo.clave
+			nodoActual.dato = nodoReemplazo.dato
+		}
+	} else if nodoActual.clave == abb.raiz.clave{ //Si es raiz y tiene uno o ningun hijo
+		if nodoActual.esHoja() {//Si es raiz y NO tiene hinos
 			abb.raiz = nil
 			abb.cantidad--
 			return dato
-		} else if nodoActual.unHijo() {
+		} else if nodoActual.unHijo() { //Si es raiz y tiene un hijo
 			if nodoActual.izquierdo != nil {
 				abb.raiz = nodoActual.izquierdo
 			} else {
@@ -100,30 +109,19 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 			abb.cantidad--
 			return dato
 		}
-	}
-
-	//Si es una hoja
-	if nodoActual.esHoja() {
-		if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
-			nodoPadre.izquierdo = nil
-		} else {
-			nodoPadre.derecho = nil
-		}
-	} else if nodoActual.unHijo() {
-		if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
-			borrarUnHijo(nodoPadre, nodoActual, intercambiarIzquierdo)
-		} else {
-			borrarUnHijo(nodoPadre, nodoActual, intercambiarDerecho)
-		}
-	} else { //Si tengo dos hijitos
-		nodoReemplazo := abb.buscarReemplazante(nodoActual)
-		if nodoActual.clave == abb.raiz.clave {
-			abb.raiz.clave = nodoReemplazo.clave
-			abb.raiz.dato = nodoReemplazo.dato
-		} else {
-			dato = nodoActual.dato
-			nodoActual.clave = nodoReemplazo.clave
-			nodoActual.dato = nodoReemplazo.dato
+	} else{ //Si NO es raiz
+		if nodoActual.esHoja() { //Si no tiene hijos
+			if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
+				nodoPadre.izquierdo = nil
+			} else {
+				nodoPadre.derecho = nil
+			}
+		} else { //Si tiene un hijo
+			if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
+				borrarUnHijo(nodoPadre, nodoActual, intercambiarIzquierdo)
+			} else {
+				borrarUnHijo(nodoPadre, nodoActual, intercambiarDerecho)
+			}
 		}
 	}
 
@@ -131,6 +129,7 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	return dato
 }
 
+//intercambiarIzquierdo es un criterio que 
 func intercambiarIzquierdo[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
 	padre.izquierdo = hijo
 }
@@ -281,6 +280,10 @@ func (nodo *nodoAbb[K, V]) esHoja() bool {
 
 func (nodo *nodoAbb[K, V]) unHijo() bool {
 	return (nodo.izquierdo != nil && nodo.derecho == nil) || (nodo.izquierdo == nil && nodo.derecho != nil)
+}
+
+func (nodo *nodoAbb[K, V]) dosHijos() bool {
+	return nodo.izquierdo != nil && nodo.derecho != nil
 }
 
 func (abb *abb[K, V]) buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
