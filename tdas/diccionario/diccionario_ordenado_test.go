@@ -697,3 +697,33 @@ func TestAgregarClaveBorrada(t *testing.T) {
 	require.EqualValues(t, 3, abb.Obtener(10))
 
 }
+
+func TestBorrarDosHijos(t *testing.T) {
+	t.Log("Borra un nodo con dos hijos y corrobora que no pertenece. Luego lo vuelve a agregar y corrobora que si pertenece")
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+
+	for i := 0; i < 10000; i++ {
+		abb.Guardar(i, i)
+	}
+
+	require.True(t, abb.Pertenece(20))
+	require.Equal(t, 20, abb.Obtener(20))
+	abb.Borrar(20)
+	require.False(t, abb.Pertenece(20))
+	abb.Guardar(20, 5)
+	require.True(t, abb.Pertenece(20))
+	require.Equal(t, 5, abb.Obtener(20))
+
+	abb2 := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+	for i, el := range arbolEspecifico {
+		abb2.Guardar(el, i)
+	}
+
+	require.True(t, abb2.Pertenece(18))
+	require.Equal(t, 1, abb2.Obtener(18))
+	abb2.Borrar(18)
+	require.False(t, abb2.Pertenece(18))
+	abb2.Guardar(18, 5)
+	require.True(t, abb2.Pertenece(18))
+	require.Equal(t, 5, abb2.Obtener(18))
+}

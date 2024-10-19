@@ -84,13 +84,16 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 
 	if nodoActual.dosHijos() { //Si tiene dos hijos
 		nodoReemplazo := abb.buscarReemplazante(nodoActual) //Buscamos un reemplazante para el nodo que queremos eliminar
-		if nodoActual.clave == abb.raiz.clave {             //Si es raiz y tiene dos hijos
-			abb.raiz.clave = nodoReemplazo.clave
-			abb.raiz.dato = nodoReemplazo.dato
+		claveReemplazo := nodoReemplazo.clave
+		datoReemplazo := nodoReemplazo.dato
+		abb.Borrar(nodoReemplazo.clave)         //Borramos el reemplazante
+		if nodoActual.clave == abb.raiz.clave { //Si es raiz y tiene dos hijos
+			abb.raiz.clave = claveReemplazo
+			abb.raiz.dato = datoReemplazo
 		} else { //Si tiene dos hijos y NO es raiz
 			dato = nodoActual.dato
-			nodoActual.clave = nodoReemplazo.clave
-			nodoActual.dato = nodoReemplazo.dato
+			nodoActual.clave = claveReemplazo
+			nodoActual.dato = datoReemplazo
 		}
 		abb.cantidad++
 
@@ -163,20 +166,19 @@ func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funci
 	if nodo == nil {
 		return true
 	}
-
-	if abb.cmp(nodo.clave, *desde) > 0 { // Si el nodo es mayor a DESDE
+	if desde == nil || abb.cmp(nodo.clave, *desde) > 0 { // Si el nodo es mayor a DESDE
 		if !(abb.iterarRango(nodo.izquierdo, desde, hasta, funcion)) {
 			return false
 		}
 	}
 
-	if (abb.cmp(nodo.clave, *desde) >= 0) && (abb.cmp(nodo.clave, *hasta) <= 0) { //Si el nodo esta dentro del rango que queremos iterar
+	if (desde == nil || (abb.cmp(nodo.clave, *desde) >= 0)) && (hasta == nil || (abb.cmp(nodo.clave, *hasta) <= 0)) { //Si el nodo esta dentro del rango que queremos iterar
 		if !funcion(nodo.clave, nodo.dato) { //Le aplicamos la funcion al nodo
 			return false
 		}
 	}
 
-	if abb.cmp(nodo.clave, *hasta) < 0 { //Si el nodo es manor a HASTA
+	if hasta == nil || abb.cmp(nodo.clave, *hasta) < 0 { //Si el nodo es manor a HASTA
 		if !(abb.iterarRango(nodo.derecho, desde, hasta, funcion)) {
 			return false
 		}
@@ -288,7 +290,6 @@ func (abb *abb[K, V]) buscarReemplazante(nodo *nodoAbb[K, V]) *nodoAbb[K, V] {
 	for nodoReemplazo.izquierdo != nil {
 		nodoReemplazo = nodoReemplazo.izquierdo
 	}
-	abb.Borrar(nodoReemplazo.clave) //Borramos el reemplazante
 	return nodoReemplazo
 }
 
