@@ -190,15 +190,15 @@ func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funci
 		}
 	}
 
-	if abb.cmp(nodo.clave, *desde) > 0 && abb.cmp(nodo.clave, *hasta) < 0 {
+	if abb.cmp(nodo.clave, *desde) >= 0 && abb.cmp(nodo.clave, *hasta) <= 0 {
 		if !funcion(nodo.clave, nodo.dato) { //:) Le aplico la fun al nodo y si dev FALSO termmino de iterar
 			return false
 		}
 	}
 
-	if abb.cmp(nodo.clave, *hasta) > 0 {
-		seguirIzq := abb.iterarRango(nodo.izquierdo, desde, hasta, funcion)
-		if !seguirIzq {
+	if abb.cmp(nodo.clave, *hasta) < 0 {
+		seguirDer := abb.iterarRango(nodo.derecho, desde, hasta, funcion)
+		if !seguirDer {
 			return false
 		}
 	}
@@ -297,14 +297,13 @@ func (iter *iteradorABB[K, V]) apilarIzquierdos(nodo *nodoAbb[K, V]) {
 //FALTA
 
 //Falta: (test-ver si hay que poner mas)
-//	Dos primit. extras que hay q proar
-// Iteracion iterna y externa tienen que ser en orden -> no quiero ver si la clave es valida, quiero ver si es una clave espe
-//Iterar en orden tanto en el interno como en el externo
-//Pruebas de vol nos importa en que orden estamos guardando, hay que generar algun grado de desorden (Se puede usar math.random)
-//Revisar los de volumen
-//Revisar el orden de entrada (que no nos importa orden de entrada pero si el de salida)
-//El de rangos
-//Documentar test q hagamos
+//[X] Pruebas de vol nos importa en que orden estamos guardando, hay que generar algun grado de desorden (Se puede usar math.random)
+//[X] Iteracion iterna y externa tienen que ser en orden -> no quiero ver si la clave es valida, quiero ver si es una clave espe
+//[X] Dos primit. extras que hay q proar
+//[X] Iterar en orden tanto en el interno como en el externo
+//[X] Revisar los de volumen
+//[X] El de rangos
+//[ ] Documentar test q hagamos
 
 //Codigo:
 //Codigo repetido

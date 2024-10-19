@@ -6,8 +6,18 @@ import (
 	TDADiccionario "tdas/diccionario"
 	"testing"
 
+	"math/rand"
+
 	"github.com/stretchr/testify/require"
 )
+
+const (
+	MAX_VALOR_RANDOM = 20000
+	N                = 50000
+)
+
+var DESDE_RANGOS int = 18
+var HASTA_RANGOS int = 82
 
 func comparacionEnteros(a, b int) int {
 	return a - b
@@ -413,6 +423,7 @@ func TestDiccionarioIterarAbb(t *testing.T) {
 	iter.Siguiente()
 	segundo, segundo_valor := iter.VerActual()
 	require.NotEqualValues(t, -1, buscar(segundo, claves))
+	require.True(t, segundo > primero, "El iterador no itero en el orden correcto")
 	require.EqualValues(t, valores[buscar(segundo, claves)], segundo_valor)
 	require.NotEqualValues(t, primero, segundo)
 	require.True(t, iter.HaySiguiente())
@@ -421,6 +432,7 @@ func TestDiccionarioIterarAbb(t *testing.T) {
 	require.True(t, iter.HaySiguiente())
 	tercero, _ := iter.VerActual()
 	require.NotEqualValues(t, -1, buscar(tercero, claves))
+	require.True(t, tercero > segundo, "El iterador no itero en el orden correcto")
 	require.NotEqualValues(t, primero, tercero)
 	require.NotEqualValues(t, segundo, tercero)
 	iter.Siguiente()
@@ -457,6 +469,7 @@ func TestIteradorNoLlegaAlFinalAbb(t *testing.T) {
 	require.NotEqualValues(t, -1, buscar(tercero, claves))
 }
 
+/*BORRAR O VER SI HAY QUE BORRAR*/
 func TestPruebaIterarTrasBorradosAbb(t *testing.T) {
 	t.Log("Prueba de caja blanca: Esta prueba intenta verificar el comportamiento del hash abierto cuando " +
 		"queda con listas vacías en su tabla. El iterador debería ignorar las listas vacías, avanzando hasta " +
@@ -489,72 +502,43 @@ func TestPruebaIterarTrasBorradosAbb(t *testing.T) {
 	require.False(t, iter.HaySiguiente())
 }
 
-func ejecutarPruebasVolumenIteradorAbb(b *testing.B, n int) {
-	abb := TDADiccionario.CrearABB[string, *int](strings.Compare)
+func TestEjecutarPruebasVolumenIteradorAbb(t *testing.T) {
+	t.Log("Se inserta una gran cantidad de elementos desordenados en el ABB. " +
+		"Luego se comprueba que los elementos se recorren de forma ordenada.")
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 
-	claves := make([]string, n)
-	valores := make([]int, n)
+	claves := make([]int, N)
+	valores := make([]int, N)
 
-	/* Inserta 'n' parejas en el hash */
-	for i := 0; i < n; i++ {
-		claves[i] = fmt.Sprintf("%08d", i)
+	for i := 0; i < N; i++ {
+		numeroRandom := int(rand.Float64() * MAX_VALOR_RANDOM)
+		claves[i] = numeroRandom
 		valores[i] = i
-		abb.Guardar(claves[i], &valores[i])
+		abb.Guardar(claves[i], valores[i])
 	}
 
 	// Prueba de iteración sobre las claves almacenadas.
 	iter := abb.Iterador()
-	require.True(b, iter.HaySiguiente())
+	require.True(t, iter.HaySiguiente())
 
 	ok := true
 	var i int
-	var clave string
-	var valor *int
+	var anteriorNumero int
 
-	for i = 0; i < n; i++ {
+	for i = 0; i < N; i++ {
 		if !iter.HaySiguiente() {
+			break
+		}
+		c1, _ := iter.VerActual()
+		if i != 0 && anteriorNumero > c1 {
 			ok = false
 			break
 		}
-		c1, v1 := iter.VerActual()
-		clave = c1
-		if clave == "" {
-			ok = false
-			break
-		}
-		valor = v1
-		if valor == nil {
-			ok = false
-			break
-		}
-		*valor = n
+		anteriorNumero = c1
 		iter.Siguiente()
 	}
-	require.True(b, ok, "Iteracion en volumen no funciona correctamente")
-	require.EqualValues(b, n, i, "No se recorrió todo el largo")
-	require.False(b, iter.HaySiguiente(), "El iterador debe estar al final luego de recorrer")
-
-	ok = true
-	for i = 0; i < n; i++ {
-		if valores[i] != n {
-			ok = false
-			break
-		}
-	}
-	require.True(b, ok, "No se cambiaron todos los elementos")
-}
-
-func BenchmarkIteradorAbb(b *testing.B) {
-	b.Log("Prueba de stress del Iterador del Diccionario. Prueba guardando distinta cantidad de elementos " +
-		"(muy grandes) b.N elementos, iterarlos todos sin problemas. Se ejecuta cada prueba b.N veces para generar " +
-		"un benchmark")
-	for _, n := range TAMS_VOLUMEN {
-		b.Run(fmt.Sprintf("Prueba %d elementos", n), func(b *testing.B) {
-			for i := 0; i < b.N; i++ {
-				ejecutarPruebasVolumenIteradorAbb(b, n)
-			}
-		})
-	}
+	require.True(t, ok, "Iteracion en volumen no funciona correctamente")
+	require.False(t, iter.HaySiguiente(), "El iterador debe estar al final luego de recorrer")
 }
 
 func TestVolumenIteradorCorteAbb(t *testing.T) {
@@ -563,7 +547,7 @@ func TestVolumenIteradorCorteAbb(t *testing.T) {
 
 	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
 
-	/* Inserta 'n' parejas en el hash */
+	/* Inserta 'n' parejas en el abb */
 	for i := 0; i < 10000; i++ {
 		abb.Guardar(i, i)
 	}
@@ -586,4 +570,153 @@ func TestVolumenIteradorCorteAbb(t *testing.T) {
 	require.False(t, seguirEjecutando, "Se tendría que haber encontrado un elemento que genere el corte")
 	require.False(t, siguioEjecutandoCuandoNoDebia,
 		"No debería haber seguido ejecutando si encontramos un elemento que hizo que la iteración corte")
+}
+
+func TestIteradorCorteAbb(t *testing.T) {
+	t.Log("Verifica que no se hagan iteraciones de mas en distintos puntos de corte.")
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+
+	abb.Guardar(24, 1)
+	abb.Guardar(18, 2)
+	abb.Guardar(22, 3)
+	abb.Guardar(20, 4)
+	abb.Guardar(10, 5)
+	abb.Guardar(26, 6)
+	abb.Guardar(28, 7)
+
+	seguirEjecutando := true
+	siguioEjecutandoCuandoNoDebia := false
+
+	//cortar en Raiz
+	abb.Iterar(func(clave int, dato int) bool {
+		if !seguirEjecutando {
+			siguioEjecutandoCuandoNoDebia = true
+		}
+		if clave == 24 {
+			seguirEjecutando = false
+			return false
+		}
+		return true
+	})
+
+	//cortar en Hoja
+	seguirEjecutando = true
+	abb.Iterar(func(clave int, dato int) bool {
+		if !seguirEjecutando {
+			siguioEjecutandoCuandoNoDebia = true
+		}
+		if clave == 22 {
+			seguirEjecutando = false
+			return false
+		}
+		return true
+	})
+	//cortar en un hijo
+	seguirEjecutando = true
+	abb.Iterar(func(clave int, dato int) bool {
+		if !seguirEjecutando {
+			siguioEjecutandoCuandoNoDebia = true
+		}
+		if clave == 26 {
+			seguirEjecutando = false
+			return false
+		}
+		return true
+	})
+	//cortar en dos hijos
+	seguirEjecutando = true
+	abb.Iterar(func(clave int, dato int) bool {
+		if !seguirEjecutando {
+			siguioEjecutandoCuandoNoDebia = true
+		}
+		if clave == 18 {
+			seguirEjecutando = false
+			return false
+		}
+		return true
+	})
+	require.False(t, siguioEjecutandoCuandoNoDebia, "El iterador itero de mas")
+}
+
+// Suma
+// con rangos
+func TestIteradorInternoSuma(t *testing.T) {
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+
+	abb.Guardar(24, 1)
+	abb.Guardar(18, 2)
+	abb.Guardar(22, 3)
+	abb.Guardar(20, 4)
+	abb.Guardar(10, 5)
+	abb.Guardar(26, 6)
+	abb.Guardar(28, 7)
+
+	suma := 0
+	abb.Iterar(func(clave int, dato int) bool {
+		suma += dato
+		return true
+	})
+	require.Equal(t, 28, suma, "ERROR: Deberia devolver %d", 28)
+}
+
+func TestIteradorInternoRangosSuma(t *testing.T) {
+	t.Log("Corrobora que el iterador interno funciona bien al hacer operaciones con los valores iterados")
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+
+	abb.Guardar(24, 1)
+	abb.Guardar(18, 2)
+	abb.Guardar(22, 3)
+	abb.Guardar(20, 4)
+	abb.Guardar(10, 5)
+	abb.Guardar(26, 6)
+	abb.Guardar(28, 7)
+
+	suma := 0
+	iteroFueraDeRango := false
+	abb.IterarRango(&DESDE_RANGOS, &HASTA_RANGOS, func(clave int, dato int) bool {
+		if clave < DESDE_RANGOS || clave > HASTA_RANGOS {
+			iteroFueraDeRango = true
+			return false
+		}
+		suma += dato
+		return true
+	})
+	require.False(t, iteroFueraDeRango, "ERROR: Deberia devolver %d", 5050)
+	require.Equal(t, 23, suma, "ERROR: Deberia devolver %d", 23)
+}
+
+func TestVolumenIteradorInternoRangos(t *testing.T) {
+	t.Log("Corrobora que el iterador interno solo itere los numeros dentro del rango requerido.")
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+
+	for i := 1; i <= N; i++ {
+		abb.Guardar(i, i)
+	}
+	iteroFueraDeRango := false
+	abb.IterarRango(&DESDE_RANGOS, &HASTA_RANGOS, func(clave int, dato int) bool {
+		if clave < DESDE_RANGOS || clave > HASTA_RANGOS {
+			iteroFueraDeRango = true
+			return false
+		}
+		return true
+	})
+	require.False(t, iteroFueraDeRango, "ERROR")
+}
+
+func TestVolumenIteradorExternoRangos(t *testing.T) {
+	t.Log("Corrobora que el iterador externo solo itere los numeros dentro del rango requerido.")
+	abb := TDADiccionario.CrearABB[int, int](comparacionEnteros)
+
+	for i := 1; i <= N; i++ {
+		abb.Guardar(i, i)
+	}
+
+	iteroFueraDeRango := false
+	for iter := abb.IteradorRango(&DESDE_RANGOS, &HASTA_RANGOS); iter.HaySiguiente(); iter.Siguiente() {
+		clave, _ := iter.VerActual()
+		if clave < DESDE_RANGOS || clave > HASTA_RANGOS {
+			iteroFueraDeRango = true
+		}
+	}
+	require.False(t, iteroFueraDeRango, "ERROR")
 }

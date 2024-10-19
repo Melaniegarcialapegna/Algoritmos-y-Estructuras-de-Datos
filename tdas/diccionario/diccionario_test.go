@@ -560,7 +560,7 @@ func ejecutarPruebasVolumenIterador(b *testing.B, n int) {
 	claves := make([]string, n)
 	valores := make([]int, n)
 
-	/* Inserta 'n' parejas en el hash */
+	/* Inserta 'n' parejas en el abb */
 	for i := 0; i < n; i++ {
 		claves[i] = fmt.Sprintf("%08d", i)
 		valores[i] = i
