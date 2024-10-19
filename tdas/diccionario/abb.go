@@ -4,7 +4,6 @@ import (
 	TDAPila "tdas/pila"
 )
 
-const ()
 
 // nodoAbb representa un nodo del arbol binario de busqueda.
 type nodoAbb[K comparable, V any] struct {
@@ -30,6 +29,7 @@ func crearNodoAbb[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
 func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdenado[K, V] {
 	return &abb[K, V]{raiz: nil, cantidad: 0, cmp: funcion_cmp}
 }
+
 
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
 	nodoNuevo := crearNodoAbb[K, V](clave, dato)
@@ -61,6 +61,7 @@ func (abb *abb[K, V]) Pertenece(clave K) bool {
 	return encontrado
 }
 
+
 func (abb *abb[K, V]) Obtener(clave K) V {
 	if abb.raiz == nil {
 		panic("La clave no pertenece al diccionario")
@@ -73,6 +74,7 @@ func (abb *abb[K, V]) Obtener(clave K) V {
 
 	return nodo.dato
 }
+
 
 func (abb *abb[K, V]) Borrar(clave K) V {
 	if abb.raiz == nil {
@@ -129,14 +131,17 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 	return dato
 }
 
+
 func (abb *abb[K, V]) Cantidad() int {
 	return abb.cantidad
 }
+
 
 func (abb *abb[K, V]) Iterar(funcion func(clave K, dato V) bool) {
 	abb.iterar(abb.raiz, funcion)
 }
 
+//iterar es una funcion interna de Iterar
 func (abb *abb[K, V]) iterar(nodo *nodoAbb[K, V], funcion func(clave K, dato V) bool) bool {
 	if nodo == nil {
 		return true
@@ -151,47 +156,39 @@ func (abb *abb[K, V]) iterar(nodo *nodoAbb[K, V], funcion func(clave K, dato V) 
 	return abb.iterar(nodo.derecho, funcion)
 }
 
+
 func (abb *abb[K, V]) Iterador() IterDiccionario[K, V] {
 	return abb.IteradorRango(nil, nil)
 }
 
-//iteradorABB representa un iterador para el arbol binario de busqueda.
-type iteradorABB[K comparable, V any] struct {
-	arbol      *abb[K, V]
-	pila       TDAPila.Pila[*nodoAbb[K, V]]
-	funcionCmp func(K, K) int
-	desde      *K
-	hasta      *K
-}
 
+//ITERADORES POR RANGO
 // Iterador interno por rangos
 func (abb *abb[K, V]) IterarRango(desde *K, hasta *K, funcion func(clave K, dato V) bool) {
 	abb.iterarRango(abb.raiz, desde, hasta, funcion)
 }
 
 //iterarRango es una funcion interna de IterarRango
-//PONER TODO EN UNA SOLA LINEA???????
+//CAMBIE x Fede
 func (abb *abb[K, V]) iterarRango(nodo *nodoAbb[K, V], desde *K, hasta *K, funcion func(clave K, dato V) bool) bool {
 	if nodo == nil {
 		return true
 	}
 
 	if abb.cmp(nodo.clave, *desde) > 0 {// Si el nodo es mayor a DESDE
-		seguirIzq := abb.iterarRango(nodo.izquierdo, desde, hasta, funcion)
-		if !seguirIzq {
+		if !(abb.iterarRango(nodo.izquierdo, desde, hasta, funcion) ){
 			return false
 		}
 	}
 
-	if abb.cmp(nodo.clave, *desde) >= 0 && abb.cmp(nodo.clave, *hasta) <= 0 {
+	if abb.cmp(nodo.clave, *desde) >= 0 && abb.cmp(nodo.clave, *hasta) <= 0 { //Si el nodo esta dentro del rango que queremos iterar
 		if !funcion(nodo.clave, nodo.dato) { //Le aplicamos la funcion al nodo
 			return false
 		}
 	}
 
-	if abb.cmp(nodo.clave, *hasta) < 0 {
-		seguirDer := abb.iterarRango(nodo.derecho, desde, hasta, funcion)
-		if !seguirDer {
+	if abb.cmp(nodo.clave, *hasta) < 0 {//Si el nodo es manor a HASTA
+		if !(abb.iterarRango(nodo.derecho, desde, hasta, funcion)) {
 			return false
 		}
 	}
@@ -208,7 +205,17 @@ func (abb *abb[K, V]) IteradorRango(desde *K, hasta *K) IterDiccionario[K, V] {
 	return iter
 }
 
-// Iterador externo
+//ITERADOR EXTERNO
+//iteradorABB representa un iterador para el arbol binario de busqueda.
+type iteradorABB[K comparable, V any] struct {
+	arbol      *abb[K, V]
+	pila       TDAPila.Pila[*nodoAbb[K, V]]
+	funcionCmp func(K, K) int
+	desde      *K
+	hasta      *K
+}
+
+
 func (iter *iteradorABB[K, V]) HaySiguiente() bool {
 	return !iter.pila.EstaVacia()
 }
@@ -228,6 +235,7 @@ func (iter *iteradorABB[K, V]) Siguiente() {
 	actual := iter.pila.Desapilar()
 	iter.apilarIzquierdos(actual.derecho)
 }
+
 
 // Funciones Auxiliares (las nuestras)
 
@@ -318,21 +326,3 @@ func (iter *iteradorABB[K, V]) apilarIzquierdos(nodo *nodoAbb[K, V]) {
 	}
 }
 
-//FALTA
-
-//Falta: (test-ver si hay que poner mas)
-//[X] Pruebas de vol nos importa en que orden estamos guardando, hay que generar algun grado de desorden (Se puede usar math.random)
-//[X] Iteracion iterna y externa tienen que ser en orden -> no quiero ver si la clave es valida, quiero ver si es una clave espe
-//[X] Dos primit. extras que hay q proar
-//[X] Iterar en orden tanto en el interno como en el externo
-//[X] Revisar los de volumen
-//[X] El de rangos
-//[ ] Documentar test q hagamos
-
-//Codigo:
-//Codigo repetido
-//Ctes
-//Modular
-//Documentar nuestras func
-//Ser felices :)
-//Somos capos
