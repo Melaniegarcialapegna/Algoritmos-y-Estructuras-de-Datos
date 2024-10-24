@@ -19,7 +19,6 @@ type abb[K comparable, V any] struct {
 	cmp      func(K, K) int
 }
 
-// Hola!!
 // crearNodoAbb crea y devuelve un nuevo nodoAbb.
 func crearNodoAbb[K comparable, V any](clave K, dato V) *nodoAbb[K, V] {
 	return &nodoAbb[K, V]{izquierdo: nil, derecho: nil, clave: clave, dato: dato}
