@@ -21,11 +21,13 @@ func TestColaPrioridadVacia(t *testing.T) {
 	//Creando una cola vacia para enteros.
 	colaPrioridadEnteros := TDAColaPrioridad.CrearHeap[int](cmp)
 	require.True(t, colaPrioridadEnteros.EstaVacia(), "Deberia devolver True, ya que la cola deberia estar vacia")
+	require.Equal(t, 0, colaPrioridadEnteros.Cantidad(), "La cantidad de la cola deberia ser 0")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridadEnteros.Desencolar() }, "Error: deberia devolver ‘La cola esta vacia‘")
 	//Creando una cola vacia para cadenas.
 	colaCadena := TDAColaPrioridad.CrearHeap[string](strings.Compare)
 	require.True(t, colaCadena.EstaVacia(), "Deberia devolver True, ya que la cola deberia estar vacia")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaCadena.VerMax() }, "Error: deberia devolver ‘La cola esta vacia‘")
+	require.Equal(t, 0, colaCadena.Cantidad(), "La cantidad de la cola deberia ser 0")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaCadena.Desencolar() }, "Error: deberia devolver ‘La cola esta vacia‘")
 }
 
@@ -38,24 +40,30 @@ func TestEncolarPrioridadElementos(t *testing.T) {
 	require.True(t, colaPrioridad.EstaVacia(), "Deberia devolver True, ya que la cola deberia estar vacia")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridad.VerMax() }, "Error: deberia devolver ‘La cola esta vacia‘")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridad.Desencolar() }, "Error: deberia devolver ‘La cola esta vacia‘")
+	require.Equal(t, 0, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 0")
 	colaPrioridad.Encolar(2)
 	colaPrioridad.Encolar(3)
 	colaPrioridad.Encolar(4)
 	colaPrioridad.Encolar(5)
 	colaPrioridad.Encolar(6)
+	require.Equal(t, 5, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 5")
 	require.Equal(t, 6, colaPrioridad.VerMax(), "El primer elemento de la cola deberia ser 6")
 	require.Equal(t, 6, colaPrioridad.Desencolar(), "Al desencolar deberia devolver el 6")
+	require.Equal(t, 4, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 4")
 	colaPrioridad.Encolar(7)
 	colaPrioridad.Encolar(8)
+	require.Equal(t, 6, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 6")
 	require.Equal(t, 8, colaPrioridad.VerMax(), "El primer elemento de la cola deberia ser 8")
 	require.Equal(t, 8, colaPrioridad.Desencolar(), "Al desencolar deberia devolver el 8")
 	require.Equal(t, 7, colaPrioridad.Desencolar(), "Al desencolar deberia devolver el 7")
 	require.Equal(t, 5, colaPrioridad.Desencolar(), "Al desencolar deberia devolver el 5")
+	require.Equal(t, 3, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 3")
 	require.Equal(t, 4, colaPrioridad.VerMax(), "El primer elemento de la cola deberia ser 4")
 	require.False(t, colaPrioridad.EstaVacia(), "Deberia devolver False, ya que la cola NO deberia estar vacia")
 	require.Equal(t, 4, colaPrioridad.Desencolar(), "Al desencolar deberia devolver el 4")
 	require.Equal(t, 3, colaPrioridad.Desencolar(), "Al desencolar deberia devolver el 3")
 	require.Equal(t, 2, colaPrioridad.Desencolar(), "Al desencolar deberia devolver el 2")
+	require.Equal(t, 0, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 0")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridad.VerMax() }, "Error: deberia devolver ‘La cola esta vacia‘")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridad.Desencolar() }, "Error: deberia devolver ‘La cola esta vacia‘")
 	require.True(t, colaPrioridad.EstaVacia(), "Deberia devolver True, ya que la cola deberia estar vacia")
@@ -73,6 +81,7 @@ func TestDesencolar(t *testing.T) {
 	}
 	//Probamos que se comporte como una cola recien creada
 	require.True(t, colaPrioridad.EstaVacia(), "Deberia devolver True, ya que la cola deberia estar vacia")
+	require.Equal(t, 0, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 0")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridad.VerMax() }, "Error: deberia devolver ‘La cola esta vacia‘")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridad.Desencolar() }, "Error: deberia devolver ‘La cola esta vacia‘")
 }
@@ -97,6 +106,7 @@ func TestVolumen(t *testing.T) {
 // TestFuncionesInvalidasColaPrioridadNueva se encarga de verificar que las acciones de desencolar y ver_primero en una cola recién creada sean inválidas.
 func TestFuncionesInvalidasColaPrioridadNueva(t *testing.T) {
 	colaPrioridad := TDAColaPrioridad.CrearHeap[int](cmp)
+	require.Equal(t, 0, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 0")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridad.VerMax() }, "Error: deberia devolver ‘La cola esta vacia‘")
 	require.PanicsWithValue(t, "La cola esta vacia", func() { colaPrioridad.Desencolar() }, "Error: deberia devolver ‘La cola esta vacia‘")
 }
@@ -111,20 +121,25 @@ func TestEstaVacia(t *testing.T) {
 func TestEncolarDistintosDatos(t *testing.T) {
 	//Con numeros enteros
 	colaPrioridad := TDAColaPrioridad.CrearHeap[int](cmp)
+	require.Equal(t, 0, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 0")
 	colaPrioridad.Encolar(1)
+	require.Equal(t, 1, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 1")
 	require.Equal(t, 1, colaPrioridad.VerMax(), "El primer elemento de la cola deberia ser 1")
 	colaPrioridad.Encolar(2)
 	colaPrioridad.Encolar(3)
 	colaPrioridad.Encolar(4)
+	require.Equal(t, 4, colaPrioridad.Cantidad(), "La cantidad de la cola deberia ser 4")
 	require.Equal(t, 4, colaPrioridad.VerMax(), "El primer elemento de la cola deberia ser 4")
 
 	//Con cadenas
 	colaPrioridadCadena := TDAColaPrioridad.CrearHeap[string](strings.Compare)
 	colaPrioridadCadena.Encolar("A")
+	require.Equal(t, 1, colaPrioridadCadena.Cantidad(), "La cantidad de la cola deberia ser 1")
 	require.Equal(t, "A", colaPrioridadCadena.VerMax(), "El primer elemento de la cola deberia ser A")
 	colaPrioridadCadena.Encolar("B")
 	colaPrioridadCadena.Encolar("C")
 	colaPrioridadCadena.Encolar("D")
+	require.Equal(t, 4, colaPrioridadCadena.Cantidad(), "La cantidad de la cola deberia ser 4")
 	require.Equal(t, "D", colaPrioridadCadena.VerMax(), "El primer elemento de la cola deberia ser D")
 
 }
@@ -135,35 +150,56 @@ func TestDesencolarDistintosDatos(t *testing.T) {
 	colaPrioridadEnteros := TDAColaPrioridad.CrearHeap[int](cmp)
 	colaPrioridadEnteros.Encolar(1)
 	require.Equal(t, 1, colaPrioridadEnteros.Desencolar(), "Al desencolar deberia devolver el 1")
+	require.Equal(t, 0, colaPrioridadEnteros.Cantidad(), "La cantidad de la cola deberia ser 0")
 	colaPrioridadEnteros.Encolar(2)
 	colaPrioridadEnteros.Encolar(3)
 	colaPrioridadEnteros.Encolar(4)
+	require.Equal(t, 3, colaPrioridadEnteros.Cantidad(), "La cantidad de la cola deberia ser 3")
 	require.Equal(t, 4, colaPrioridadEnteros.Desencolar(), "Al desencolar deberia devolver el 4")
+	require.Equal(t, 2, colaPrioridadEnteros.Cantidad(), "La cantidad de la cola deberia ser 2")
 	require.Equal(t, 3, colaPrioridadEnteros.Desencolar(), "Al desencolar deberia devolver el 3")
+	require.Equal(t, 1, colaPrioridadEnteros.Cantidad(), "La cantidad de la cola deberia ser 1")
 	require.Equal(t, 2, colaPrioridadEnteros.Desencolar(), "Al desencolar deberia devolver el 2")
+	require.Equal(t, 0, colaPrioridadEnteros.Cantidad(), "La cantidad de la cola deberia ser 0")
 
 	//Con cadenas
 	colaPrioridadCadena := TDAColaPrioridad.CrearHeap[string](strings.Compare)
 	colaPrioridadCadena.Encolar("A")
 	require.Equal(t, "A", colaPrioridadCadena.Desencolar(), "Al desencolar deberia devolver el A")
+	require.Equal(t, 0, colaPrioridadCadena.Cantidad(), "La cantidad de la cola deberia ser 0")
 	colaPrioridadCadena.Encolar("B")
 	colaPrioridadCadena.Encolar("C")
 	colaPrioridadCadena.Encolar("D")
+	require.Equal(t, 3, colaPrioridadCadena.Cantidad(), "La cantidad de la cola deberia ser 3")
 	require.Equal(t, "D", colaPrioridadCadena.Desencolar(), "Al desencolar deberia devolver el D")
+	require.Equal(t, 2, colaPrioridadCadena.Cantidad(), "La cantidad de la cola deberia ser 2")
 	require.Equal(t, "C", colaPrioridadCadena.Desencolar(), "Al desencolar deberia devolver el C")
+	require.Equal(t, 1, colaPrioridadCadena.Cantidad(), "La cantidad de la cola deberia ser 1")
 	require.Equal(t, "B", colaPrioridadCadena.Desencolar(), "Al desencolar deberia devolver el B")
+	require.Equal(t, 0, colaPrioridadCadena.Cantidad(), "La cantidad de la cola deberia ser 0")
 
 }
 
 // TestHeapArr
 func TestHeapArr(t *testing.T) {
 	arr := []int{2, 26, 22, 12, 24, 4, 12, 8}
+	arrOrdenado := []int{26, 24, 22, 12, 12, 8, 4, 2}
+	heap := TDAColaPrioridad.CrearHeapArr[int](arr, cmp)
 
+	for i := 0; i < len(arr); i++ {
+		require.Equal(t, arrOrdenado[i], heap.Desencolar())
+	}
+
+	require.True(t, heap.EstaVacia())
 }
 
-// TestHeapSort
-func TestHeapSort(t *testing.T) {
-	arr := []int{2, 26, 22, 12, 24, 4, 12, 8}
-	arrOrdenados := []int{2, 4, 8, 12, 12, 22, 24, 26}
+// // TestHeapSort
+// func TestHeapSort(t *testing.T) {
+// 	arr := []int{2, 26, 22, 12, 24, 4, 12, 8}
+// 	arrOrdenado := []int{2, 4, 8, 12, 12, 22, 24, 26}
+// 	arregloHeapSort := []
 
-}
+// 	for i := 0; i < len(arr); i++ {
+
+// 	}
+// }

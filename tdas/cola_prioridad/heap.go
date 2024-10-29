@@ -3,9 +3,10 @@ package cola_prioridad
 // Normal Rockwell
 
 const (
-	TAM_INICIAL                    = 2 //Tamaño inicial del heap
-	FACTOR_REDIMENSION_AUMENTO     = 2 //Factor de aumento para redimensionar heap
-	FACTOR_REDIMENSION_DISMINUCION = 2 //Factor de disminucion para redimensionar heap
+	TAM_INICIAL                    = 6                              //Tamaño inicial del heap
+	FACTOR_REDIMENSION_AUMENTO     = 2                              //Factor de aumento para redimensionar heap
+	FACTOR_REDIMENSION_DISMINUCION = 2 * FACTOR_REDIMENSION_AUMENTO //Factor de disminucion para redimensionar heap
+	MULTIPLICADOR_REDUCIR_CANTIDAD = 4                              //
 )
 
 // heap representa un elemento del heap???????
@@ -23,9 +24,10 @@ func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 
 // CrearHeapArr crea y devuelve un heap a partir de un arreglo y una funcion de comparacion
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
-	heap := CrearHeap(funcion_cmp)
-	//Aplicarle heapify al arreglo -> asi es O(N) SINO O(N LOG N)
-	return &heap[T]{datos: arreglo, cantidad: 0, cmp: funcion_cmp}
+	arregloNuevo := make([]T, len(arreglo))
+	copy(arregloNuevo, arreglo)
+	arregloNuevo = heapify(arregloNuevo, len(arreglo), funcion_cmp)
+	return &heap[T]{datos: arregloNuevo, cantidad: len(arreglo), cmp: funcion_cmp}
 }
 
 func (heap *heap[T]) EstaVacia() bool {
@@ -37,7 +39,7 @@ func (heap *heap[T]) Encolar(valor T) {
 		heap.redimensionar(heap.cantidad * FACTOR_REDIMENSION_AUMENTO)
 	}
 	heap.datos[heap.cantidad] = valor
-	heap.upHeap(heap.cantidad)
+	heap.datos = upHeap(heap.datos, heap.cantidad, heap.cmp)
 	heap.cantidad++
 }
 
@@ -52,10 +54,15 @@ func (heap *heap[T]) Desencolar() T {
 	if heap.EstaVacia() {
 		panic("La cola esta vacia")
 	}
+
 	borrado := heap.datos[0]
 	heap.datos[0], heap.datos[heap.cantidad-1] = heap.datos[heap.cantidad-1], heap.datos[0]
 	heap.cantidad--
-	heap.downHeap(0)
+	heap.datos = downHeap(heap.datos, 0, heap.cantidad, heap.cmp)
+
+	if (!heap.EstaVacia()) && (heap.cantidad <= (len(heap.datos) / (FACTOR_REDIMENSION_DISMINUCION))) {
+		heap.redimensionar(len(heap.datos) / MULTIPLICADOR_REDUCIR_CANTIDAD)
+	}
 
 	return borrado
 }
@@ -65,40 +72,42 @@ func (heap *heap[T]) Cantidad() int {
 }
 
 // unHeap reordena el heap de abajo hacia arriba a partir de un indice
-func (heap *heap[T]) upHeap(indice int) {
+func upHeap[T any](arreglo []T, indice int, funcion_cmp func(T, T) int) []T {
 	for indice > 0 {
 		padre := (indice - 1) / 2
-		if heap.cmp(heap.datos[padre], heap.datos[indice]) > 0 {
+		if funcion_cmp(arreglo[padre], arreglo[indice]) > 0 {
 			break
 		}
 		//Swap
-		heap.datos[padre], heap.datos[indice] = heap.datos[indice], heap.datos[padre]
+		arreglo[padre], arreglo[indice] = arreglo[indice], arreglo[padre]
 		indice = padre
 	}
+	return arreglo
 }
 
 // downHeap reordena el heap de arriba hacia abajo a partir de un indice
-func (heap *heap[T]) downHeap(indice int) {
-	for indice < heap.cantidad {
+func downHeap[T any](arreglo []T, indice int, cantidad int, funcion_cmp func(T, T) int) []T {
+	for indice < cantidad {
 		hijoIzq := (2 * indice) + 1
 		hijoDer := (2 * indice) + 2
 
-		if hijoIzq >= heap.cantidad {
+		if hijoIzq >= cantidad {
 			break //No tiene hijos
 		}
 
 		indiceHijo := hijoIzq
-		if (hijoDer < heap.cantidad) && (heap.cmp(heap.datos[hijoDer], heap.datos[indiceHijo]) > 0) {
+		if (hijoDer < cantidad) && (funcion_cmp(arreglo[hijoDer], arreglo[indiceHijo]) > 0) {
 			indiceHijo = hijoDer
 		}
 
-		if heap.cmp(heap.datos[indiceHijo], heap.datos[indice]) < 0 {
+		if funcion_cmp(arreglo[indiceHijo], arreglo[indice]) < 0 {
 			break
 		}
 		//Swap
-		heap.datos[indiceHijo], heap.datos[indice] = heap.datos[indice], heap.datos[indiceHijo]
+		arreglo[indiceHijo], arreglo[indice] = arreglo[indice], arreglo[indiceHijo]
 		indice = indiceHijo
 	}
+	return arreglo
 }
 
 // redimensionar cambia el tamaño del array que contiene los elementos del heap
@@ -111,19 +120,22 @@ func (heap *heap[T]) redimensionar(tam int) {
 // HeapSort ordena los elementos de menor a mayor a partir de un arrayS con forma de heap
 func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
 	//1: Le aplicamos heapify a los elementos
-	//Vemos el max y lo swap con el ultimo
-	//Tenemos un coso log menos en el arr
-	//Asi hasta llegar a 1 elem logico
+	heapify(elementos, len(elementos), funcion_cmp)
+	for i := len(elementos) - 1; i > 0; i-- {
+		elementos[0], elementos[i] = elementos[i], elementos[0]
+		downHeap(elementos, 0, i, funcion_cmp)
+	}
 }
 
 // heapify convierte un array en un heap
-func heapify[T any](elementos []T, funcion_cmp func(T, T) int) {
-	//cantElem := len(elementos)
-	//Hacer downheap desde elementos[cantElem -1] hasta el elem[0]
-	//Este downheap es de ABAJO HACIA ARRIBA !!!!!!!
+func heapify[T any](elementos []T, cantidad int, funcion_cmp func(T, T) int) []T {
+	for cantidad > 0 {
+		elementos = downHeap(elementos, cantidad-1, cantidad, funcion_cmp)
+		cantidad--
+	}
+	return elementos
 }
 
 //Pruebas con el de CrearHeapArr
 //Pruebas con heapsort
-//En pruebas falta probar el prim CANTIDAD -> LO DE ABAJO!!
-//Falta redim cuando tenemos muy poca cantidad y muchas celdas(??) -> en desencolar
+//En pruebas falta probar el prim CANTIDAD
