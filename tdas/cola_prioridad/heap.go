@@ -3,6 +3,7 @@ package cola_prioridad
 // Normal Rockwell
 
 const (
+	TAM_INICIAL                    = 2
 	FACTOR_REDIMENSION_AUMENTO     = 2
 	FACTOR_REDIMENSION_DISMINUCION = 2
 )
@@ -13,8 +14,9 @@ type heap[T any] struct {
 	cmp      func(T, T) int
 }
 
-func CrearColaPriodad[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
-	return &heap[T]{cmp: funcion_cmp}
+func CrearColaPrioridad[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
+	arr := make([]T, TAM_INICIAL)
+	return &heap[T]{datos: arr, cantidad: 0, cmp: funcion_cmp}
 }
 
 func (heap *heap[T]) EstaVacia() bool {
@@ -31,6 +33,9 @@ func (heap *heap[T]) Encolar(valor T) {
 }
 
 func (heap *heap[T]) VerMax() T {
+	if heap.EstaVacia() {
+		panic("La cola esta vacia")
+	}
 	return heap.datos[0]
 }
 
