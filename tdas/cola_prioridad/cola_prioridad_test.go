@@ -12,6 +12,7 @@ const (
 	TAM_VOLUMEN = 10000
 )
 
+//Funcion de comparacion 
 func cmp(a, b int) int {
 	return a - b
 }
@@ -180,26 +181,27 @@ func TestDesencolarDistintosDatos(t *testing.T) {
 
 }
 
-// TestHeapArr
+// TestHeapArr corrobora que el Heap devuelve los elementos en el orden correcto
 func TestHeapArr(t *testing.T) {
 	arr := []int{2, 26, 22, 12, 24, 4, 12, 8}
 	arrOrdenado := []int{26, 24, 22, 12, 12, 8, 4, 2}
-	heap := TDAColaPrioridad.CrearHeapArr[int](arr, cmp)
+	colaPrioridadArr := TDAColaPrioridad.CrearHeapArr[int](arr, cmp)
 
 	for i := 0; i < len(arr); i++ {
-		require.Equal(t, arrOrdenado[i], heap.Desencolar())
+		require.Equal(t, arrOrdenado[i], colaPrioridadArr.Desencolar())
 	}
 
-	require.True(t, heap.EstaVacia())
+	require.Equal(t, 0, colaPrioridadArr.Cantidad(), "La cantidad de la cola deberia ser 0")
+	require.True(t, colaPrioridadArr.EstaVacia(), "Deberia devolver True, ya que la cola deberia estar vacia")
 }
 
-// // TestHeapSort
-// func TestHeapSort(t *testing.T) {
-// 	arr := []int{2, 26, 22, 12, 24, 4, 12, 8}
-// 	arrOrdenado := []int{2, 4, 8, 12, 12, 22, 24, 26}
-// 	arregloHeapSort := []
+// TestHeapSort corrobora que el HeapSort ordena correctamente
+func TestHeapSort(t *testing.T) {
+	arr := []int{2, 26, 22, 12, 24, 4, 12, 8}
+	arrOrdenado := []int{2, 4, 8, 12, 12, 22, 24, 26}
+	TDAColaPrioridad.HeapSort(arr, cmp)
 
-// 	for i := 0; i < len(arr); i++ {
-
-// 	}
-// }
+	for i := 0; i < len(arr); i++ {
+		require.Equal(t, arrOrdenado[i], arr[i])
+	}
+}

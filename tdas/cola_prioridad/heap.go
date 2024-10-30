@@ -6,10 +6,10 @@ const (
 	TAM_INICIAL                    = 6                              //Tamaño inicial del heap
 	FACTOR_REDIMENSION_AUMENTO     = 2                              //Factor de aumento para redimensionar heap
 	FACTOR_REDIMENSION_DISMINUCION = 2 * FACTOR_REDIMENSION_AUMENTO //Factor de disminucion para redimensionar heap
-	MULTIPLICADOR_REDUCIR_CANTIDAD = 4                              //
+	MULTIPLICADOR_REDUCIR_CANTIDAD = 4                              //Factor de multiplicacion para redimensionar heap
 )
 
-// heap representa un elemento del heap???????
+// heap representa un heap implementado con un arreglo
 type heap[T any] struct {
 	datos    []T
 	cantidad int
@@ -26,7 +26,7 @@ func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
 	arregloNuevo := make([]T, len(arreglo))
 	copy(arregloNuevo, arreglo)
-	arregloNuevo = heapify(arregloNuevo, len(arreglo), funcion_cmp)
+	arregloNuevo = heapify(arregloNuevo, len(arregloNuevo), funcion_cmp)
 	return &heap[T]{datos: arregloNuevo, cantidad: len(arreglo), cmp: funcion_cmp}
 }
 
@@ -129,13 +129,10 @@ func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
 
 // heapify convierte un array en un heap
 func heapify[T any](elementos []T, cantidad int, funcion_cmp func(T, T) int) []T {
-	for cantidad > 0 {
-		elementos = downHeap(elementos, cantidad-1, cantidad, funcion_cmp)
-		cantidad--
+	indice := cantidad
+	for indice > 0 {
+		elementos = downHeap(elementos, indice-1, cantidad, funcion_cmp)
+		indice--
 	}
 	return elementos
 }
-
-//Pruebas con el de CrearHeapArr
-//Pruebas con heapsort
-//En pruebas falta probar el prim CANTIDAD
