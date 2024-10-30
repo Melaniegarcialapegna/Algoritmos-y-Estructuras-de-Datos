@@ -24,12 +24,13 @@ func CrearHeap[T any](funcion_cmp func(T, T) int) ColaPrioridad[T] {
 
 // CrearHeapArr crea y devuelve un heap a partir de un arreglo y una funcion de comparacion
 func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[T] {
-	arregloNuevo := make([]T, len(arreglo))
-	copy(arregloNuevo, arreglo)
-	if len(arregloNuevo) > 0 {
+	if len(arreglo) > 0 {
+		arregloNuevo := make([]T, len(arreglo))
+		copy(arregloNuevo, arreglo)
 		arregloNuevo = heapify(arregloNuevo, len(arregloNuevo), funcion_cmp)
+		return &heap[T]{datos: arregloNuevo, cantidad: len(arreglo), cmp: funcion_cmp}
 	}
-	return &heap[T]{datos: arregloNuevo, cantidad: len(arreglo), cmp: funcion_cmp}
+	return CrearHeap(funcion_cmp)
 }
 
 func (heap *heap[T]) EstaVacia() bool {
