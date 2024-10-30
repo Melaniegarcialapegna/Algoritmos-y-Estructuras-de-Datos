@@ -12,7 +12,7 @@ const (
 	TAM_VOLUMEN = 10000
 )
 
-//Funcion de comparacion 
+// Funcion de comparacion
 func cmp(a, b int) int {
 	return a - b
 }
