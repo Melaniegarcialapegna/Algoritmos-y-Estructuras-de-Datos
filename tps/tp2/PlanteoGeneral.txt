@@ -31,6 +31,8 @@ Iteramos cada clave y nos fijamos si hizo DDOS (si hizo mas de 5 peticiones en 2
 Mantenimiento para actualizar visitados:
 -> Appendear al arreglo de sitios
 
+Mantenimiento para actualizar visitantes:
+-> Meter cosas al ABB
 
 
 (3) O( s + k log s) s: cant dif de sitios en tda hist / k: parametro
@@ -55,7 +57,7 @@ K * log s (encolra (upheap))
 
 
 (2)
-O(v) en el peor Contamos
+O(v) en el peor 
 O(log v) wn caso prom
 
 Agarra las ips de todos los registros y filtro segun el RANGO , cof cof ABB
