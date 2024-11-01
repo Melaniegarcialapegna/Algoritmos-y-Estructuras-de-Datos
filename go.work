@@ -1,3 +1,6 @@
 go 1.22
 
-use ./tdas
+use (
+	./tps/tdas
+    ./tps/tp2
+)
