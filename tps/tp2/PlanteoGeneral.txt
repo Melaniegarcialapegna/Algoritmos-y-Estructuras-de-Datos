@@ -1,0 +1,63 @@
+Pseudocodigo / ideas :
+
+Main :
+    Leer ENTRADA:
+
+    case (1): agregar archivo 
+    case (2): ver visitantes       
+    case (3): ver mas visitados 
+
+---> cada case con una funcion en un archivo aparte que haces que miras 
+
+
+
+(1) Dicc de tipo ABB 
+
+Leer archivo del argumento -> abre el archivo log *O(n)*
+lee linea por linea -> agarra : IP, fecha y hs , metodo -> HTTP y URL (Procesamiento)
+
+Modulo time: https://pkg.go.dev/time
+
+Detectar DoS -> si supera las 5 en menos de 2s 
+
+*O(n)* -> n : cant lineas arch
+
+
+Recorrer  agregar en el diccionario ((Parte del Procesamiento)): 
+    Ip como clave
+    fecha y hora y eso como valor
+Iteramos cada clave y nos fijamos si hizo DDOS (si hizo mas de 5 peticiones en 2 segundos)
+    
+Mantenimiento para actualizar visitados:
+-> Appendear al arreglo de sitios
+
+
+
+(3) O( s + k log s) s: cant dif de sitios en tda hist / k: parametro
+Contamos solicitudes a cada recurso y guardamos los resultados
+
+Imprimimos los k recursos mas solicit (ordenamos por cant de solicitudes) -> HEAP
+
+-> Tenemos que tener un arreglo de sitios (ver en agregar archivo)
+Pasos:
+1. Crear heap con el arreglo (Heapify y es O(n))
+2. Desencolar k veces del heap (log k)
+
+
+Explicacion de cada complejidad:
+s (hacer heapify con el arr de los sition en toda la historia)
+
+K * log s (desencolar (downheap))
++
+K * log s (encolra (upheap))
+=
+2k * log(s) = k*log(s)
+
+
+(2)
+O(v) en el peor Contamos
+O(log v) wn caso prom
+
+Agarra las ips de todos los registros y filtro segun el RANGO , cof cof ABB
+
+Imprimir las IPs en orden
