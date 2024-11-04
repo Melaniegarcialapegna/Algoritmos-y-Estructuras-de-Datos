@@ -27,7 +27,7 @@ func CrearHeapArr[T any](arreglo []T, funcion_cmp func(T, T) int) ColaPrioridad[
 	if len(arreglo) > 0 {
 		arregloNuevo := make([]T, len(arreglo))
 		copy(arregloNuevo, arreglo)
-		arregloNuevo = heapify(arregloNuevo, len(arregloNuevo), funcion_cmp)
+		heapify(arregloNuevo, len(arregloNuevo), funcion_cmp)
 		return &heap[T]{datos: arregloNuevo, cantidad: len(arreglo), cmp: funcion_cmp}
 	}
 	return CrearHeap(funcion_cmp)
@@ -42,7 +42,7 @@ func (heap *heap[T]) Encolar(valor T) {
 		heap.redimensionar(heap.cantidad * FACTOR_REDIMENSION_AUMENTO)
 	}
 	heap.datos[heap.cantidad] = valor
-	heap.datos = upHeap(heap.datos, heap.cantidad, heap.cmp)
+	upHeap(heap.datos, heap.cantidad, heap.cmp)
 	heap.cantidad++
 }
 
@@ -61,7 +61,7 @@ func (heap *heap[T]) Desencolar() T {
 	borrado := heap.datos[0]
 	heap.datos[0], heap.datos[heap.cantidad-1] = heap.datos[heap.cantidad-1], heap.datos[0]
 	heap.cantidad--
-	heap.datos = downHeap(heap.datos, 0, heap.cantidad, heap.cmp)
+	downHeap(heap.datos, 0, heap.cantidad, heap.cmp)
 
 	if (!heap.EstaVacia()) && (heap.cantidad <= (len(heap.datos) / (FACTOR_REDIMENSION_DISMINUCION))) {
 		heap.redimensionar(len(heap.datos) / MULTIPLICADOR_REDUCIR_CANTIDAD)
@@ -75,7 +75,7 @@ func (heap *heap[T]) Cantidad() int {
 }
 
 // unHeap reordena el heap de abajo hacia arriba a partir de un indice
-func upHeap[T any](arreglo []T, indice int, funcion_cmp func(T, T) int) []T {
+func upHeap[T any](arreglo []T, indice int, funcion_cmp func(T, T) int) {
 	for indice > 0 {
 		padre := (indice - 1) / 2
 		if funcion_cmp(arreglo[padre], arreglo[indice]) > 0 {
@@ -85,11 +85,10 @@ func upHeap[T any](arreglo []T, indice int, funcion_cmp func(T, T) int) []T {
 		arreglo[padre], arreglo[indice] = arreglo[indice], arreglo[padre]
 		indice = padre
 	}
-	return arreglo
 }
 
 // downHeap reordena el heap de arriba hacia abajo a partir de un indice
-func downHeap[T any](arreglo []T, indice int, cantidad int, funcion_cmp func(T, T) int) []T {
+func downHeap[T any](arreglo []T, indice int, cantidad int, funcion_cmp func(T, T) int) {
 	for indice < cantidad {
 		hijoIzq := (2 * indice) + 1
 		hijoDer := (2 * indice) + 2
@@ -110,7 +109,6 @@ func downHeap[T any](arreglo []T, indice int, cantidad int, funcion_cmp func(T, 
 		arreglo[indiceHijo], arreglo[indice] = arreglo[indice], arreglo[indiceHijo]
 		indice = indiceHijo
 	}
-	return arreglo
 }
 
 // redimensionar cambia el tamaño del array que contiene los elementos del heap
@@ -131,11 +129,10 @@ func HeapSort[T any](elementos []T, funcion_cmp func(T, T) int) {
 }
 
 // heapify convierte un array en un heap
-func heapify[T any](elementos []T, cantidad int, funcion_cmp func(T, T) int) []T {
+func heapify[T any](elementos []T, cantidad int, funcion_cmp func(T, T) int) {
 	indice := cantidad
 	for indice > 0 {
-		elementos = downHeap(elementos, indice-1, cantidad, funcion_cmp)
+		downHeap(elementos, indice-1, cantidad, funcion_cmp)
 		indice--
 	}
-	return elementos
 }
