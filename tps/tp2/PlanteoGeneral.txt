@@ -13,7 +13,7 @@ Main :
 
 (1) Dicc de tipo ABB 
 
-Leer archivo del argumento -> abre el archivo log *O(n)*
+Leer archivo del argumento -> abre el archivo *O(n)*
 lee linea por linea -> agarra : IP, fecha y hs , metodo -> HTTP y URL (Procesamiento)
 
 Modulo time: https://pkg.go.dev/time
