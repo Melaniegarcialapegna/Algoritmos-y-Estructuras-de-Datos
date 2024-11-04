@@ -2,6 +2,7 @@ package tp2
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strings"
 	TDADiccionario "tdas/diccionario"
@@ -50,11 +51,19 @@ func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLo
 
 	for iter := diccArchivo.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
 		ip, logs := iter.VerActual()
+		contadorLogs := 0
+		inicio := logs[0].fecha
 		for _, log := range logs {
-
+			diferencia := log.fecha.Sub(inicio) * 1000000000
+			if diferencia < 2 {
+				contadorLogs++
+			}
+			if contadorLogs >= 5 {
+				fmt.Printf("DoS: %s\n", ip)
+				break
+			}
 		}
 	}
-
 	return
 
 }

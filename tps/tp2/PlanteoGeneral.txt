@@ -29,7 +29,7 @@ Recorrer  agregar en el diccionario ((Parte del Procesamiento)):
 Iteramos cada clave y nos fijamos si hizo DDOS (si hizo mas de 5 peticiones en 2 segundos)
     
 Mantenimiento para actualizar visitados:
--> Appendear al arreglo de sitios
+-> Appendear al diccionario de sitios
 
 Mantenimiento para actualizar visitantes:
 -> Meter cosas al ABB
