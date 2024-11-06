@@ -1,4 +1,4 @@
-package tp2
+package funciones
 
 import (
 	"bufio"
@@ -9,6 +9,19 @@ import (
 	TDADiccionario "tdas/diccionario"
 	"time"
 )
+
+type IP string
+type DatoLog struct {
+	ip         IP
+	fecha      time.Time
+	metodoHttp string
+	url        string
+}
+
+type Sitio struct {
+	url     string
+	visitas int
+}
 
 func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLog], sitios TDADiccionario.Diccionario[string, int], rutaArchivo string) {
 	// abrimos el archivo -> O(n)
@@ -64,7 +77,6 @@ func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLo
 			}
 		}
 	}
-	return
 
 }
 
@@ -107,7 +119,3 @@ func parsearLog(linea string) DatoLog {
 func compararSitios(s1, s2 Sitio) int {
 	return 1
 }
-
-/*
-
- */
