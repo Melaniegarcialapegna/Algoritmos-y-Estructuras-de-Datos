@@ -15,7 +15,6 @@ import (
 // 	"time"
 // )
 
-type Sitio string
 type IP string
 type DatoLog struct {
 	ip         IP
@@ -24,14 +23,23 @@ type DatoLog struct {
 	url        string
 }
 
-type SitioVisitantes struct {
-	sitio   Sitio
+type Sitio struct {
+	url     string
 	visitas int
 }
 
 func cmpIps(ip1, ip2 IP) int {
-	//cosas
-	// return ip1 - ip2
+	ip1Separada := strings.Fields(".") //separar en campos (buscar)
+	ip2Separada := strings.Fields(".")
+	for i := 0; i < 4; i++ {
+		if ip1Separada[i] == ip2Separada[i] {
+			continue
+		}
+		if ip1Separada[i] > ip2Separada[i] {
+			return 1
+		}
+		return -1
+	}
 	return 0
 }
 
@@ -41,7 +49,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		linea := scanner.Text()
-		entradas := strings.Fields(" ")
+		entradas := strings.Split(linea, "")
 
 	}
 
@@ -49,7 +57,7 @@ func main() {
 	case "agregar_archivo":
 		AgregarArchivo(diccionarioAbbIps, sitios, entradas[1])
 	case "ver_visitantes":
-		VerVisitantes(diccionarioAbbIps)
+		VerVisitantes(diccionarioAbbIps, desde, hasta)
 	case "ver_mas_visitados":
 		VerMasVisitados(sitios)
 	}
