@@ -25,14 +25,11 @@ type Sitio struct {
 
 func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLog], sitios TDADiccionario.Diccionario[string, int], rutaArchivo string) {
 	// abrimos el archivo -> O(n)
-	if len(os.Args) < 2 {
-		panic("No se eviaron los argumentos suficientes")
-	}
 	archivo, err := os.Open(rutaArchivo)
-	scanner := bufio.NewScanner(archivo)
 	if err != nil {
 		panic("No se pudo leer el archivo")
 	}
+	scanner := bufio.NewScanner(archivo)
 	diccArchivo := TDADiccionario.CrearHash[IP, []DatoLog]()
 	for scanner.Scan() {
 		datoLog := parsearLog(scanner.Text())
@@ -97,11 +94,13 @@ func VerMasVisitados(diccionario TDADiccionario.Diccionario[string, int], cantid
 		sitios = append(sitios, sitio)
 	}
 	heap := TDAHeap.CrearHeapArr(sitios, compararSitios)
-	fmt.Printf("Visitantes: \n")
+	fmt.Printf("OK\n")
+	fmt.Printf("Sitios más visitados:\n")
 	for i := 0; i < cantidad; i++ {
 		sitio := heap.Desencolar()
-		fmt.Printf("%s \n", sitio.url)
+		fmt.Printf("\t%s - %d\n", sitio.url, sitio.visitas)
 	}
+	fmt.Printf("OK\n")
 }
 
 func parsearLog(linea string) DatoLog {
@@ -117,5 +116,10 @@ func parsearLog(linea string) DatoLog {
 }
 
 func compararSitios(s1, s2 Sitio) int {
-	return 1
+	if s1.visitas > s2.visitas {
+		return 1
+	} else if s1.visitas < s2.visitas {
+		return -1
+	}
+	return 0
 }

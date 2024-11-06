@@ -16,11 +16,11 @@ func cmpIps(ip1, ip2 Funciones.IP) int {
 	for i := 0; i < 4; i++ {
 		if ip1Separada[i] == ip2Separada[i] {
 			continue
-		}
-		if ip1Separada[i] > ip2Separada[i] {
+		} else if ip1Separada[i] > ip2Separada[i] {
 			return 1
+		} else {
+			return -1
 		}
-		return -1
 	}
 	return 0
 }
@@ -31,7 +31,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		linea := scanner.Text()
-		entradas := strings.Split(linea, "")
+		entradas := strings.Split(linea, " ")
 
 		switch entradas[0] {
 		case "agregar_archivo":
