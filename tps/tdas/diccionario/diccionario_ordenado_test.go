@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	MAX_VALOR_RANDOM = 20000
-	N                = 30000
+	MAX_VALOR_RANDOM = 2
+	N                = 8000
 )
 
 var DESDE_RANGOS int = 18

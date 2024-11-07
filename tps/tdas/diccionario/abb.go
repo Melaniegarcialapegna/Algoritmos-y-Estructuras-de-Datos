@@ -31,15 +31,12 @@ func CrearABB[K comparable, V any](funcion_cmp func(K, K) int) DiccionarioOrdena
 
 func (abb *abb[K, V]) Guardar(clave K, dato V) {
 	nodoNuevo := crearNodoAbb[K, V](clave, dato)
-	if abb.raiz == nil {
-		abb.raiz = nodoNuevo
-		abb.cantidad++
-		return
-	}
 
 	nodoPadre, nodo, encontrado := abb.buscarElemento(clave)
 	if !encontrado {
-		if abb.cmp(nodoPadre.clave, clave) > 0 {
+		if nodoPadre == nil {
+			abb.raiz = nodoNuevo
+		} else if abb.cmp(nodoPadre.clave, clave) > 0 {
 			nodoPadre.izquierdo = nodoNuevo
 		} else {
 			nodoPadre.derecho = nodoNuevo
@@ -51,18 +48,11 @@ func (abb *abb[K, V]) Guardar(clave K, dato V) {
 }
 
 func (abb *abb[K, V]) Pertenece(clave K) bool {
-	if abb.raiz == nil {
-		return false
-	}
 	_, _, encontrado := abb.buscarElemento(clave)
 	return encontrado
 }
 
 func (abb *abb[K, V]) Obtener(clave K) V {
-	if abb.raiz == nil {
-		panic("La clave no pertenece al diccionario")
-	}
-
 	_, nodo, encontrado := abb.buscarElemento(clave)
 	if !encontrado {
 		panic("La clave no pertenece al diccionario")
@@ -72,10 +62,6 @@ func (abb *abb[K, V]) Obtener(clave K) V {
 }
 
 func (abb *abb[K, V]) Borrar(clave K) V {
-	if abb.raiz == nil {
-		panic("La clave no pertenece al diccionario")
-	}
-
 	nodoPadre, nodoActual, encontrado := abb.buscarElemento(clave)
 	if !encontrado {
 		panic("La clave no pertenece al diccionario")
@@ -98,29 +84,16 @@ func (abb *abb[K, V]) Borrar(clave K) V {
 		abb.cantidad++
 
 	} else if nodoActual.clave == abb.raiz.clave { //Si es raiz y tiene uno o ningun hijo
-		if nodoActual.esHoja() { //Si es raiz y NO tiene hinos
-			abb.raiz = nil
-		} else if nodoActual.unHijo() { //Si es raiz y tiene un hijo
-			if nodoActual.izquierdo != nil {
-				abb.raiz = nodoActual.izquierdo
-			} else {
-				abb.raiz = nodoActual.derecho
-			}
+		if nodoActual.izquierdo != nil {
+			abb.raiz = nodoActual.izquierdo
+		} else {
+			abb.raiz = nodoActual.derecho
 		}
-
-	} else { //Si NO es raiz
-		if nodoActual.esHoja() { //Si no tiene hijos
-			if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
-				nodoPadre.izquierdo = nil
-			} else {
-				nodoPadre.derecho = nil
-			}
-		} else { //Si tiene un hijo
-			if nodoPadre.izquierdo != nil && nodoPadre.izquierdo.clave == nodoActual.clave {
-				borrarUnHijo(nodoPadre, nodoActual, intercambiarIzquierdo)
-			} else {
-				borrarUnHijo(nodoPadre, nodoActual, intercambiarDerecho)
-			}
+	} else { //Si NO es raiz y tiene uno o dos hijos
+		if nodoPadre.izquierdo != nil && nodoPadre.izquierdo == nodoActual {
+			abb.borrarUnHijo(nodoPadre, nodoActual, intercambiarIzquierdo)
+		} else {
+			abb.borrarUnHijo(nodoPadre, nodoActual, intercambiarDerecho)
 		}
 	}
 
@@ -227,22 +200,22 @@ func (iter *iteradorABB[K, V]) Siguiente() {
 
 // Funciones Auxiliares
 
-// intercambiarIzquierdo asigna un hijo izquierdo a su padre.
+// intercambiarIzquierdo intercambia el hijo izquiero del padre por el nuevo hijo
 func intercambiarIzquierdo[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
 	padre.izquierdo = hijo
 }
 
-// intercambiarDerecho asigna un hijo derecho a su padre.
+// intercambiarDerecho intercambia el hijo derecho del padre por el nuevo hijo
 func intercambiarDerecho[K comparable, V any](padre, hijo *nodoAbb[K, V]) {
 	padre.derecho = hijo
 }
 
-// borrarUnHijo maneja las eliminaciones de nodos que tienen un solo hijo
-func borrarUnHijo[K comparable, V any](nodoPadre, nodoActual *nodoAbb[K, V], intercambiarHijo func(*nodoAbb[K, V], *nodoAbb[K, V])) {
-	if nodoActual.izquierdo == nil {
-		intercambiarHijo(nodoPadre, nodoActual.derecho)
+// borrarUnHijo se encarga de borrar hojas o nodos con un solo hijo
+func (abb *abb[K, V]) borrarUnHijo(nodoPadre, nodoActual *nodoAbb[K, V], criterio func(*nodoAbb[K, V], *nodoAbb[K, V])) {
+	if nodoActual.izquierdo != nil {
+		criterio(nodoPadre, nodoActual.izquierdo)
 	} else {
-		intercambiarHijo(nodoPadre, nodoActual.izquierdo)
+		criterio(nodoPadre, nodoActual.derecho)
 	}
 }
 
@@ -263,20 +236,9 @@ func (abb *abb[K, V]) buscarNodo(nodoPadre *nodoAbb[K, V], nodoActual *nodoAbb[K
 		return abb.buscarNodo(nodoActual, nodoActual.izquierdo, clave)
 	} else if condicion < 0 { //nodo < clave
 		return abb.buscarNodo(nodoActual, nodoActual.derecho, clave)
-	} else if condicion == 0 { //clave = nodo
-		return nodoPadre, nodoActual, true
 	}
-	return nil, nil, true
-}
-
-// esHoja devuelve TRUE si el nodo NO tiene hijos.
-func (nodo *nodoAbb[K, V]) esHoja() bool {
-	return nodo.izquierdo == nil && nodo.derecho == nil
-}
-
-// unHijo devuelve TRUE si el nodo tiene solo UN hijo.
-func (nodo *nodoAbb[K, V]) unHijo() bool {
-	return (nodo.izquierdo != nil && nodo.derecho == nil) || (nodo.izquierdo == nil && nodo.derecho != nil)
+	//clave = nodo
+	return nodoPadre, nodoActual, true
 }
 
 // unHijo devuelve TRUE si el nodo tiene DOS hijos.
