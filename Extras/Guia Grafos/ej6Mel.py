@@ -1,21 +1,19 @@
 def es_arbol(g):
-    return es_conexo(g) and  es_aciclico(g)
-
+    return es_conexo(g) and es_aciclico(g)
 
 def es_conexo(grafo):
     padres={}
     visitados = {}
     orden = {}
-    ya_entro = False
+    contador = 0
     for vertice in grafo:
         if vertice not in visitados:
-            if ya_entro:
-                return False
+            contador +=1
             padres[vertice] = None
             visitados[vertice] = True
-            ya_entro = True
-            ciclo_dfs(grafo, vertice, orden, padres, visitados)
-    return True   
+            orden[vertice] = 0
+            ciclo_dfs(grafo, vertice,orden ,padres, visitados)
+    return contador == 1
 
 
 def es_aciclico(g):
@@ -26,28 +24,11 @@ def es_aciclico(g):
         if vertice not in visitados:
             visitados[vertice] = True
             padres[vertice] = None
-            ciclo= ciclo_dfs(g, vertice, orden, padres, visitados)
+            orden[vertice] =0
+            ciclo= ciclo_dfs(g, vertice, orden ,padres, visitados)
             if ciclo:
                 return False
     return True   
-
-def ciclo_dfs(grafo, vertice, padres, visitados):
-    for adyacente in grafo.adyacentes(vertice):
-        if adyacente in visitados:
-            if adyacente != padres[vertice]:
-                return True 
-        else:
-            padres[adyacente]= vertice
-            ciclo = ciclo_dfs(grafo,adyacente,padres,visitados)
-            if ciclo:
-                return True
-    return False
-
-
-
-
-
-
 
 def ciclo_dfs(grafo, vertice, orden, padres, visitados):
     for adyacente in grafo.adyacentes(vertice):
@@ -63,7 +44,7 @@ def ciclo_dfs(grafo, vertice, orden, padres, visitados):
             padres[adyacente] = vertice
             visitados[adyacente] = True
             orden[adyacente] = orden[vertice]+1
-            hayCiclo = ciclo_dfs(grafo, adyacente, padres, visitados)
+            hayCiclo = ciclo_dfs(grafo, adyacente, orden, padres, visitados)
             if hayCiclo:
                 return True
     return False
