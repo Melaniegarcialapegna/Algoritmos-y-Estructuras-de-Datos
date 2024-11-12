@@ -68,3 +68,4 @@ def recorrido_dfs_grados(grafo, vertice, padres, gradoVertices, visitados, tipo)
             if adyacente not in gradoVertices:
                 gradoVertices[adyacente] = 0
             gradoVertices[adyacente] += 1
+            
