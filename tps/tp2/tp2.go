@@ -30,8 +30,8 @@ func cmpIps(ip1, ip2 Funciones.IP) int {
 func main() {
 	diccionarioAbbIps := TDADiccionario.CrearABB[Funciones.IP, []Funciones.DatoLog](cmpIps)
 	sitios := TDADiccionario.CrearHash[string, int]()
-	file, _ := os.Open("04_in")
-	scanner := bufio.NewScanner(file)
+	//file, _ := os.Open("04_in")
+	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		linea := scanner.Text()
 		entradas := strings.Split(linea, " ")
