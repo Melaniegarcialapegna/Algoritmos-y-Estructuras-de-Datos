@@ -30,8 +30,10 @@ def recorrido_bfs(grafo, vertice, padre, visitados, grados_de_entrada, grados_de
                 visitados[adyacente] = True
 
                 # Ahora verificamos si el vertice es critico
-                if grados_de_entrada[adyacente] == 1 or grados_de_salida[adyacente] == 1:
-                    lista_vertices_criticos.add(vertice)  # Para no tener duplicadosxd
+                if grados_de_entrada(adyacente) == 1:
+                    lista_vertices_criticos.add(vertice)
+                if grados_de_salida(vertice) == 1:
+                    lista_vertices_criticos.add(adyacente)
 
 def grados_entrada(g):
     return buscar_grados(g, tipo="entrada")

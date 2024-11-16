@@ -14,9 +14,11 @@ func cmpIps(ip1, ip2 Funciones.IP) int {
 	ip1Separada := strings.Split(string(ip1), ".") //separar en campos (buscar)
 	ip2Separada := strings.Split(string(ip2), ".")
 	for i := 0; i < 4; i++ {
-		if ip1Separada[i] == ip2Separada[i] {
+		num1, _ := strconv.Atoi(ip1Separada[i])
+		num2, _ := strconv.Atoi(ip2Separada[i])
+		if num1 == num2 {
 			continue
-		} else if ip1Separada[i] > ip2Separada[i] {
+		} else if num1 > num2 {
 			return 1
 		} else {
 			return -1
@@ -28,7 +30,8 @@ func cmpIps(ip1, ip2 Funciones.IP) int {
 func main() {
 	diccionarioAbbIps := TDADiccionario.CrearABB[Funciones.IP, []Funciones.DatoLog](cmpIps)
 	sitios := TDADiccionario.CrearHash[string, int]()
-	scanner := bufio.NewScanner(os.Stdin)
+	file, _ := os.Open("04_in")
+	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		linea := scanner.Text()
 		entradas := strings.Split(linea, " ")
