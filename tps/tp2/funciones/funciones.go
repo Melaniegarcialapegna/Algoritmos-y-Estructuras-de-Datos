@@ -24,11 +24,11 @@ type Sitio struct {
 	visitas int
 }
 
-func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLog], sitios TDADiccionario.Diccionario[string, int], rutaArchivo string) {
+func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLog], sitios TDADiccionario.Diccionario[string, int], rutaArchivo string) string {
 	// abrimos el archivo -> O(n)
 	archivo, err := os.Open(rutaArchivo)
 	if err != nil {
-		panic("No se pudo leer el archivo")
+		return "Error en comando agregar_archivo"
 	}
 	scanner := bufio.NewScanner(archivo)
 	diccArchivo := TDADiccionario.CrearHash[IP, []DatoLog]()
@@ -81,9 +81,13 @@ func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLo
 	}
 	ipsDoSOrdenadas := radixSort(ipsDoS)
 	for _, ip := range ipsDoSOrdenadas {
-		fmt.Println("DoS: %s", ip)
+		fmt.Printf("DoS: ")
+		fmt.Printf("%s", string(ip))
+		fmt.Printf("\n")
 	}
 	fmt.Println("OK")
+
+	return ""
 }
 
 func VerVisitantes(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLog], desde IP, hasta IP) {
@@ -146,7 +150,8 @@ func SepararIp(ip IP) []int {
 	ipSeparada := strings.Split(string(ip), ".")
 	numeros := []int{}
 	for i := 0; i < 4; i++ {
-		numeros[i], _ = strconv.Atoi(ipSeparada[i])
+		num, _ := strconv.Atoi(ipSeparada[i])
+		numeros = append(numeros, num)
 	}
 	return numeros
 }
@@ -154,7 +159,8 @@ func SepararIp(ip IP) []int {
 func juntarIp(ipInt []int) IP {
 	ipArrStr := []string{}
 	for i := 0; i < 4; i++ {
-		ipArrStr[i] = strconv.Itoa(ipInt[i])
+		numStr := strconv.Itoa(ipInt[i])
+		ipArrStr = append(ipArrStr, numStr)
 	}
 	ipStr := strings.Join(ipArrStr, ".")
 	return IP(ipStr)
@@ -201,7 +207,6 @@ func countingSort(arrIps [][]int, criterio func([]int) int) [][]int {
 		arrIpsOrdenado[indice] = ip
 		sumaFrecuencias[valor]++
 	}
-
 	return arrIpsOrdenado
 
 }

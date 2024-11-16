@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -30,18 +31,38 @@ func cmpIps(ip1, ip2 Funciones.IP) int {
 func main() {
 	diccionarioAbbIps := TDADiccionario.CrearABB[Funciones.IP, []Funciones.DatoLog](cmpIps)
 	sitios := TDADiccionario.CrearHash[string, int]()
-	//file, _ := os.Open("04_in")
 	scanner := bufio.NewScanner(os.Stdin)
+
 	for scanner.Scan() {
 		linea := scanner.Text()
 		entradas := strings.Split(linea, " ")
+		huboError := false
+		if huboError {
+			break
+		}
 
 		switch entradas[0] {
 		case "agregar_archivo":
-			Funciones.AgregarArchivo(diccionarioAbbIps, sitios, entradas[1])
+			err := Funciones.AgregarArchivo(diccionarioAbbIps, sitios, entradas[1])
+			if err != "" {
+				fmt.Fprintf(os.Stderr, "%s", err)
+				fmt.Fprintf(os.Stderr, "\n")
+				huboError = true
+			}
 		case "ver_visitantes":
+			if len(entradas) != 3 {
+				fmt.Fprintln(os.Stderr, "Error en comando ver_visitantes")
+				huboError = true
+				break
+			}
 			Funciones.VerVisitantes(diccionarioAbbIps, Funciones.IP(entradas[1]), Funciones.IP(entradas[2]))
 		case "ver_mas_visitados":
+			if len(entradas) != 2 {
+				fmt.Fprintln(os.Stderr, "Error en comando ver_mas_visitados")
+				huboError = true
+				break
+			}
+
 			cantidad, _ := strconv.Atoi(entradas[1])
 			Funciones.VerMasVisitados(sitios, cantidad)
 		}
