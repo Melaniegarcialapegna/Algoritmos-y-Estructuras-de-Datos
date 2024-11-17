@@ -10,6 +10,10 @@ import (
 	Funciones "tp2/funciones"
 )
 
+const (
+	MSJ_ERROR = "Error en comando %s"
+)
+
 // cmpIps compara dos direcciones IP
 func cmpIps(ip1, ip2 Funciones.IP) int {
 	ip1Separada := strings.Split(string(ip1), ".")
@@ -45,15 +49,16 @@ func main() {
 
 		case "agregar_archivo":
 			err := Funciones.AgregarArchivo(diccionarioAbbIps, sitios, entradas[1])
-			if err != "" {
-				fmt.Fprintf(os.Stderr, "%s", err)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, MSJ_ERROR, "agregar_archivo")
 				fmt.Fprintf(os.Stderr, "\n")
 				huboError = true
 			}
 
 		case "ver_visitantes":
 			if len(entradas) != 3 {
-				fmt.Fprintln(os.Stderr, "Error en comando ver_visitantes")
+				fmt.Fprintf(os.Stderr, MSJ_ERROR, "ver_visitantes")
+				fmt.Fprintf(os.Stderr, "\n")
 				huboError = true
 				break
 			}
@@ -61,7 +66,8 @@ func main() {
 
 		case "ver_mas_visitados":
 			if len(entradas) != 2 {
-				fmt.Fprintln(os.Stderr, "Error en comando ver_mas_visitados")
+				fmt.Fprintf(os.Stderr, MSJ_ERROR, "ver_mas_visitados")
+				fmt.Fprintf(os.Stderr, "\n")
 				huboError = true
 				break
 			}

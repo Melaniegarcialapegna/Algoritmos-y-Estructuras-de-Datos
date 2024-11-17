@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+const (
+	MIN_PETICIONES_DOS = 5
+)
+
 // parsearLog convierte una linea de log en un DatoLog
 func parsearLog(linea string) DatoLog {
 	campos := strings.Split(linea, "\t")
@@ -90,7 +94,7 @@ func detectarDoS(dicc TDADiccionario.Diccionario[IP, []DatoLog]) []IP {
 				inicio = logs[i].fecha
 				contadorLogs = 1
 			}
-			if contadorLogs >= 5 {
+			if contadorLogs >= MIN_PETICIONES_DOS {
 				ipsDoS = append(ipsDoS, ip)
 				break
 			}

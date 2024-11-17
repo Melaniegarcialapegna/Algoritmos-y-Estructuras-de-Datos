@@ -28,10 +28,10 @@ type Sitio struct {
 }
 
 // AgregarArchivo procesa un archivo de logs , guarda los datos en diccionarios y detecta DoS
-func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLog], sitios TDADiccionario.Diccionario[string, int], rutaArchivo string) string {
+func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLog], sitios TDADiccionario.Diccionario[string, int], rutaArchivo string) error {
 	archivo, err := os.Open(rutaArchivo)
 	if err != nil {
-		return "Error en comando agregar_archivo"
+		return err
 	}
 	scanner := bufio.NewScanner(archivo)
 	diccArchivo := TDADiccionario.CrearHash[IP, []DatoLog]()
@@ -51,7 +51,7 @@ func AgregarArchivo(diccOrdenado TDADiccionario.DiccionarioOrdenado[IP, []DatoLo
 	}
 
 	fmt.Println("OK")
-	return ""
+	return nil
 }
 
 // VerVisitantes muestra las IPS que hicieron solicitudes dentro de un rango
