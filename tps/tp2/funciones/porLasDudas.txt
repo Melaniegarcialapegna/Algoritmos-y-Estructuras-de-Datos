@@ -1,0 +1,55 @@
+datoLog := parsearLog(scanner.Text())
+		if !diccArchivo.Pertenece(datoLog.ip) {
+			arreglo := []DatoLog{datoLog}
+			diccArchivo.Guardar(datoLog.ip, arreglo)
+		} else {
+			arreglo := diccArchivo.Obtener(datoLog.ip)
+			arreglo = append(arreglo, datoLog)
+			diccArchivo.Guardar(datoLog.ip, arreglo)
+		}
+
+		if !diccOrdenado.Pertenece(datoLog.ip) {
+			arreglo := []DatoLog{datoLog}
+			diccOrdenado.Guardar(datoLog.ip, arreglo)
+		} else {
+			arreglo := diccOrdenado.Obtener(datoLog.ip)
+			arreglo = append(arreglo, datoLog)
+			diccOrdenado.Guardar(datoLog.ip, arreglo)
+		}
+		if !sitios.Pertenece(datoLog.url) {
+			sitios.Guardar(datoLog.url, 1)
+		} else {
+			visitas := sitios.Obtener(datoLog.url)
+			visitas++
+			sitios.Guardar(datoLog.url, visitas)
+		}
+
+		-----------------------------------------------------------
+
+		De DoS
+
+			ipsDoS := []IP{}
+	for iter := diccArchivo.Iterador(); iter.HaySiguiente(); iter.Siguiente() {
+		ip, logs := iter.VerActual()
+		contadorLogs := 1
+		inicio := logs[0].fecha
+		for i := 1; i < len(logs); i++ {
+			diferencia := logs[i].fecha.Sub(inicio).Seconds()
+			if diferencia < 2 {
+				contadorLogs++
+			} else {
+				inicio = logs[i].fecha
+				contadorLogs = 1
+			}
+			if contadorLogs >= 5 {
+				ipsDoS = append(ipsDoS, ip)
+				break
+			}
+		}
+	}
+	ipsDoSOrdenadas := radixSort(ipsDoS)
+	for _, ip := range ipsDoSOrdenadas {
+		fmt.Printf("DoS: ")
+		fmt.Printf("%s", string(ip))
+		fmt.Printf("\n")
+	}

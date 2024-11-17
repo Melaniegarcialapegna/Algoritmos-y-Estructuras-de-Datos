@@ -10,8 +10,9 @@ import (
 	Funciones "tp2/funciones"
 )
 
+// cmpIps compara dos direcciones IP
 func cmpIps(ip1, ip2 Funciones.IP) int {
-	ip1Separada := strings.Split(string(ip1), ".") //separar en campos (buscar)
+	ip1Separada := strings.Split(string(ip1), ".")
 	ip2Separada := strings.Split(string(ip2), ".")
 	for i := 0; i < 4; i++ {
 		num1, _ := strconv.Atoi(ip1Separada[i])
@@ -41,6 +42,7 @@ func main() {
 		}
 
 		switch entradas[0] {
+
 		case "agregar_archivo":
 			err := Funciones.AgregarArchivo(diccionarioAbbIps, sitios, entradas[1])
 			if err != "" {
@@ -48,6 +50,7 @@ func main() {
 				fmt.Fprintf(os.Stderr, "\n")
 				huboError = true
 			}
+
 		case "ver_visitantes":
 			if len(entradas) != 3 {
 				fmt.Fprintln(os.Stderr, "Error en comando ver_visitantes")
@@ -55,6 +58,7 @@ func main() {
 				break
 			}
 			Funciones.VerVisitantes(diccionarioAbbIps, Funciones.IP(entradas[1]), Funciones.IP(entradas[2]))
+
 		case "ver_mas_visitados":
 			if len(entradas) != 2 {
 				fmt.Fprintln(os.Stderr, "Error en comando ver_mas_visitados")

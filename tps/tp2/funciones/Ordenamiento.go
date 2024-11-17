@@ -1,10 +1,10 @@
 package funciones
 
+// radixSort ordena las IPS de menor a mayor
 func radixSort(ips []IP) []IP {
-
 	arrIps := [][]int{}
 	for _, ip := range ips {
-		arrIps = append(arrIps, SepararIp(ip))
+		arrIps = append(arrIps, separarIp(ip))
 	}
 
 	arrIps = countingSort(arrIps, criterioCuarto)
@@ -19,21 +19,19 @@ func radixSort(ips []IP) []IP {
 	return ipsOrdenada
 }
 
+// countingSort ordena IPS basandose en un criterio
 func countingSort(arrIps [][]int, criterio func([]int) int) [][]int {
 
-	//Primer paso -> FRECUENCIAS
-	frecuencias := make([]int, 256) // 256 valores posibles
+	frecuencias := make([]int, 256)
 	for _, ip := range arrIps {
 		frecuencias[criterio(ip)]++
 	}
 
-	//Segundo paso -> INDICES - SUMAR FRECUENCIAS
 	sumaFrecuencias := make([]int, 256)
 	for i := 1; i < 256; i++ {
-		sumaFrecuencias[i] = sumaFrecuencias[i-1] + frecuencias[i-1] // frecuencia[i-1]:cantidad q habia del anterior
+		sumaFrecuencias[i] = sumaFrecuencias[i-1] + frecuencias[i-1]
 	}
 
-	//Tercer paso -> ACOMODAR XD
 	arrIpsOrdenado := make([][]int, len(arrIps))
 	for _, ip := range arrIps {
 		valor := criterio(ip)
@@ -45,6 +43,7 @@ func countingSort(arrIps [][]int, criterio func([]int) int) [][]int {
 
 }
 
+// Criterios
 func criterioCuarto(ip []int) int {
 	return ip[3]
 }
