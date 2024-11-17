@@ -9,6 +9,7 @@ import (
 
 const (
 	MIN_PETICIONES_DOS = 5
+	MAX_SEGUNDOS       = 2
 )
 
 // parsearLog convierte una linea de log en un DatoLog
@@ -88,7 +89,7 @@ func detectarDoS(dicc TDADiccionario.Diccionario[IP, []DatoLog]) []IP {
 		inicio := logs[0].fecha
 		for i := 1; i < len(logs); i++ {
 			diferencia := logs[i].fecha.Sub(inicio).Seconds()
-			if diferencia < DETECTOR_DOS {
+			if diferencia < MAX_SEGUNDOS {
 				contadorLogs++
 			} else {
 				inicio = logs[i].fecha

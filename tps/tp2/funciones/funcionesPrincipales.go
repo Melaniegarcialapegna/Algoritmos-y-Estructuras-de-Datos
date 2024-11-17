@@ -9,10 +9,6 @@ import (
 	"time"
 )
 
-const (
-	DETECTOR_DOS = 2
-)
-
 type IP string
 
 type DatoLog struct {
