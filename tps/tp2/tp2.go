@@ -8,7 +8,6 @@ import (
 	"strings"
 	TDADiccionario "tdas/diccionario"
 	Funciones "tp2/funciones"
-	//TDAColaPrioridad "tps/tdas/cola_prioridad"
 )
 
 func cmpIps(ip1, ip2 Funciones.IP) int {
