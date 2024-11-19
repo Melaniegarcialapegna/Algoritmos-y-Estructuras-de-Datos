@@ -1,0 +1,17 @@
+**Planteo general del TP3**
+Le recomendamos a todos los usuarios que escuchen RadioHead, Clairo y Cerati fin.
+
+-> Tenemos un archivo con pruebas en menor vol!
+
+-> Nos dan una ESTRUCTURA RECOMENDADA
+
+->HACER:
+    1.TDA grafo (prim necesarias)
+
+    2.Biblioteca de funciones de grafos
+
+    3.Programa "recomendify" (utiliza 1y2)
+
+    4.Hacer archivo "entrega.mk"
+
+->Tenemos(como en el anterior) lista de comandos con su funcionam
