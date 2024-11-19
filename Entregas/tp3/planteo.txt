@@ -10,8 +10,31 @@ Le recomendamos a todos los usuarios que escuchen RadioHead, Clairo y Cerati fin
 
     2.Biblioteca de funciones de grafos
 
-    3.Programa "recomendify" (utiliza 1y2)
+    3.Programa "recomendify" (utiliza 1 y 2)
 
     4.Hacer archivo "entrega.mk"
 
 ->Tenemos(como en el anterior) lista de comandos con su funcionam
+
+
+--------------------------------------------------------------------
+TENEMOS:
+1) Tener un grafo no dirigido que relacione si a un usuario le gusta una canción 
+(supongamos que a un usuario le gusta una canción si armó una playlist con ella). 
+Esto formará un grafo bipartito en el cual en un grupo estarán los usuarios, 
+y en el otro las canciones.
+
+1) Camino mas corto:
+    DFS entre las dos canciones y despues reconstruir Camino :p
+
+2) Canciones mas importantes:
+    Hacer un PageRank (https://algoritmos-rw.github.io/algoritmos/material/apuntes/pagerank/)
+
+3) Recomendacion (usuarios o canciones)
+    Hacer el PageRank (https://algoritmos-rw.github.io/algoritmos/material/apuntes/pagerank/)
+
+4) Ciclo de n canciones
+    DFS e ir desmarcando como visitados si no encontre el ciclo de largo
+
+5) Todas en rango
+    BFS y checkear cuales son canciones (osea sacar los usuarios digamos)
