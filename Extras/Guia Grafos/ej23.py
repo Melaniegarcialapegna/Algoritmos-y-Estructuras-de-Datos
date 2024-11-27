@@ -1,8 +1,6 @@
 import collections
-
 def diametro(grafo):
     diametro_maximo = 0
-
     for vertice in grafo:
         visitados = {}
         padres = {}
@@ -33,4 +31,6 @@ def recorrido_bfs(grafo,vertice,padres,visitados,orden):
                 if orden[adyacente] > orden_maximo:
                     orden_maximo += 1
     return orden_maximo
+
+    
             
