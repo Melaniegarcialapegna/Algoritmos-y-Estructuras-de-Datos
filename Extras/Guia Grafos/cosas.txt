@@ -1,1 +1,14 @@
-MEEEEL LA 3 DALE DALE DALE
+ Métodos del grafo:
+ Grafo(es_dirigido = False, vertices_init = []) para crear un grafo no dirigido (hacer 'from grafo import Grafo')
+ Grafo(es_dirigido = True, vertices_init = []) para crear un grafo dirigido (hacer 'from grafo import Grafo')
+ agregar_vertice(self, v)
+ borrar_vertice(self, v)
+ agregar_arista(self, v, w, peso = 1)
+ borrar_arista(self, v, w)
+ estan_unidos(self, v, w)
+ peso_arista(self, v, w)
+ obtener_vertices(self)
+ Devuelve una lista con todos los vértices del grafo
+ vertice_aleatorio(self)
+ adyacentes(self, v)
+ str
