@@ -1,7 +1,5 @@
 def amenazados(grafo):
     'Devolver una lista con los vértices que cumplen la condición'
-    visitados = {}
-    
     grados_de_entrada = grados_entrada(grafo)
     grados_de_salida = grados_salida(grafo)
     lista_vertices_criticos = set()  # Asi no tenemos duplicados

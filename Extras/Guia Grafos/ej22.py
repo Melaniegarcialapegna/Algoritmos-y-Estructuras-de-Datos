@@ -11,7 +11,6 @@ def no_es_impar(grafo):
     return True
 
 def ciclo_dfs(grafo,vertice,padre,visitados):
-    
     for adyacente in grafo.adycentes(vertice):
         if adyacente in visitados:
             if padre[adyacente] != vertice:
