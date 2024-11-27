@@ -2,9 +2,6 @@ import collections
 
 def obtener_orden(grafo):
     'Devolver una lista con un posible orden válido'
-    visitados = {}
-    padres = {}
-    orden = {}
     cola = collections.deque()
     orden_cosas = []
     
@@ -33,3 +30,4 @@ def buscar_grados_entrada(grafo):
          for ady in grafo.adyacentes(vertice):
               grados_entrada[ady] = grados_entrada.get(ady,0) +1
     return grados_entrada
+

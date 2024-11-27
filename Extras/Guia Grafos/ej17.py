@@ -1,9 +1,7 @@
 def comprobar_teorema(grafo):
     contador = 0
     for vertice in grafo:
-        cantAdyacentes = 0
-        for adyacentes in grafo.adyacentes(vertice):
-            cantAdyacentes += 1
+        cantAdyacentes = len(grafo.adyacentes(vertice))
         if cantAdyacentes %2 != 0:
             contador +=1
 
