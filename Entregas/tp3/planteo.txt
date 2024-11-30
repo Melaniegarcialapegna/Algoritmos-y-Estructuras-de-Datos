@@ -27,6 +27,8 @@ y en el otro las canciones.
 1) Camino mas corto:
     DFS entre las dos canciones y despues reconstruir Camino :p
 
+    -> En realidad como queremos el camino mas corto tenemos que usar BFS! con las distancias
+
 2) Canciones mas importantes:
     Hacer un PageRank (https://algoritmos-rw.github.io/algoritmos/material/apuntes/pagerank/)
 
@@ -38,3 +40,5 @@ y en el otro las canciones.
 
 5) Todas en rango
     BFS y checkear cuales son canciones (osea sacar los usuarios digamos)
+
+    -> Es maso como el ej de parcialito que nos pedian hallar los que estaban a K dist

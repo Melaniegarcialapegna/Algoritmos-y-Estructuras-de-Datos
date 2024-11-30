@@ -3,10 +3,8 @@ def encontrar_ciclo(grafo):
     Devuelve una lista de vertices que conforman el ciclo. 
     Si no hay ciclo, debe devolver None. 
     '''
-
     padres = {}
     visitados = set()
-
     for vertice in grafo:
         if vertice not in visitados:
             iteracion_actual = set()
