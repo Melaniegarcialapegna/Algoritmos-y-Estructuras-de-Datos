@@ -1,6 +1,7 @@
 go 1.22
 
 use (
+    ./tp1
 	./tp2
     ./tdas
 )
