@@ -30,9 +30,10 @@ class Grafo:
         return False
 
     def peso_arista(self,vertice,adyacente):
+        return True
 
-
-    def obtener_vertices(self) -> devuelve una lista con todos los vertices del grafo
+    def obtener_vertices(self): # -> devuelve una lista con todos los vertices del grafo
+        return True
 
     def vertice_aleatorio(self):
         return random.choice(list(self.grafo.keys()))
