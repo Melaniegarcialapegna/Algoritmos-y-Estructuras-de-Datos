@@ -1,10 +1,10 @@
-import grafo
+from grafo import Grafo
 from collections import deque
 
 #Recorridos
 
 #DFS
-def recorrido_dfs(grafo):
+def recorrido_dfs(grafo:Grafo):
     visitados = set()
     padres ={}
     orden={}
@@ -66,6 +66,16 @@ def dijsktra(grafo,origen):
                 cola.append(ady,actual)
     return padres, dist
 
-#Bellman(?) Hace falta hacerlo??¿
+def reconstruir_camino(padres, origen, destino):
+    camino = []
+    actual = destino
+    while actual != origen:
+        camino.append(actual)
+        actual = padres[actual]
+    camino.append(origen)
+
+    return camino
+
+#Bellman(?) Hace falta hacerlo??
 
 
