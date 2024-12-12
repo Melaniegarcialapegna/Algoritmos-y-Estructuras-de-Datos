@@ -34,13 +34,15 @@ def camino_mas_corto(grafo,origen,destino, usuarios):
         print(FLECHA)
         print(playlistSig)
         print(FLECHA)
+        print(MSJ_PLAYLIST_CONTIENE)
+        print(FLECHA)
         
         i+=2
         
         if i == len(camino) - 1:
-            print(cancionSig)
+            print(cancionSig[0])
     
 
 def obtener_playlist(usuarios, cancion, usuario):
-    return list(usuarios[usuario][cancion].keys())[0] #Devuelve alguna playlist del usuario en la que esta la cancion
+    return list(usuarios[usuario][cancion].values())[0] #Devuelve alguna playlist del usuario en la que esta la cancion
     

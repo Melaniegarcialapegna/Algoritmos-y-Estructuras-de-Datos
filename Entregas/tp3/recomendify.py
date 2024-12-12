@@ -13,7 +13,7 @@ def crear_grafo_conexiones(ruta):
             usuarios[id_usuario] = usuarios.get(id_usuario, {})
 
             usuarios[id_usuario][(cancion, artista)] = usuarios[id_usuario].get((cancion, artista), {})
-            usuarios[id_usuario][(cancion, artista)][playlist_id] = True
+            usuarios[id_usuario][(cancion, artista)][playlist_id] = playlist
 
             if not (cancion, artista) in grafo:
                 grafo.agregar_vertice((cancion,artista))
