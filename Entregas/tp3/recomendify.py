@@ -31,6 +31,15 @@ def main():
     grafo, usuarios = crear_grafo_conexiones("spotify-mini/spotify-mini.tsv")
     origen = ("Don't Go Away", "Oasis")
     destino = ("Quitter","Eminem")
-    funciones.camino_mas_corto(grafo,origen,destino,usuarios)
+
+    vertice = grafo.vertice_aleatorio()
+    probabilidades = {}
+    
+    for i in range(1000):
+        funciones.random_walk(grafo, vertice, 1, probabilidades, 10, 1000)
+    
+
+
+    print(probabilidades)
 
 main()

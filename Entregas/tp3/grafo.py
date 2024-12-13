@@ -87,4 +87,4 @@ class Grafo:
         if vertice not in self.vertices:
             raise Exception("ERROR: El vertice no pertenece al grafo")
         
-        return self.vertices[vertice].keys()
+        return list(self.vertices[vertice].keys())

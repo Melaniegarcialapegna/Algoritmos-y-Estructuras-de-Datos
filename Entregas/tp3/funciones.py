@@ -1,4 +1,5 @@
 import biblioteca 
+import random
 
 FLECHA = " --> "
 MSJ_CANCION_APARECE_PLAYLIST = "aparece en playlist"
@@ -45,4 +46,21 @@ def camino_mas_corto(grafo,origen,destino, usuarios):
 
 def obtener_playlist(usuarios, cancion, usuario):
     return list(usuarios[usuario][cancion].values())[0] #Devuelve alguna playlist del usuario en la que esta la cancion
+
+def canciones_mas_importantes(grafo,n):
+    pass
+
+def random_walk(grafo, vertice, probabilidad, probabilidades, largoMax, cantidad):
+    if largoMax == 0:
+        return
     
+    largoMax -= 1
+    probabilidades[vertice] = probabilidades.get(vertice, 0)
+    probabilidades[vertice] += probabilidad/cantidad
+    
+    adyacentes = grafo.adyacentes(vertice)
+    factor_probabilidad = 1/len(adyacentes)
+    probabilidad_sig = probabilidad*factor_probabilidad
+
+    siguiente = random.choice(adyacentes)
+    random_walk(grafo, siguiente, probabilidad_sig, probabilidades, largoMax, cantidad)
