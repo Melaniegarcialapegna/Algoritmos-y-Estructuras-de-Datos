@@ -9,6 +9,7 @@ CANT_RANDOM_WALKS = 1000
 CANT_PAGE_RANKS = 200
 LARGO_RANDOM_WALK = 200
 
+#CAMINO MAS CORTO
 def camino_mas_corto(grafo,origen,destino, usuarios):
     padres, distancia = biblioteca.bfs(grafo, origen)
     camino = biblioteca.reconstruir_camino(padres, origen, destino)
@@ -49,6 +50,8 @@ def camino_mas_corto(grafo,origen,destino, usuarios):
 def obtener_playlist(usuarios, cancion, usuario):
     return list(usuarios[usuario][cancion].values())[0] #Devuelve alguna playlist del usuario en la que esta la cancion
 
+
+#RECOMENCACIONES(CANCIONES Y USUARIOS)
 def recomendacion(grafo,n): #Cambiar lo de las n !! (quedo viejo -> hay que hacer lo de las listas)
     probabilidades = {}
     for i in range(CANT_RANDOM_WALKS):
@@ -81,6 +84,8 @@ def random_walk(grafo, vertice, probabilidad, probabilidades, largoMax, cantidad
     siguiente = random.choice(adyacentes)
     random_walk(grafo, siguiente, probabilidad_sig, probabilidades, largoMax, cantidad,False)
 
+
+#CANCIONES MAS IMPORTANTES
 def canciones_mas_importantes(grafo,n):
     pageranks = {}
 
@@ -99,16 +104,26 @@ def canciones_mas_importantes(grafo,n):
     #Parte de devolver las n mas importantes
     return heapq.nlargest(n, pageranks["canciones"].items(), compararPageRank)
 
-def page_rank(grafo, pageranks, vertice, visitados):
+def page_rank(grafo, dicc_pageranks, vertice, visitados):
     visitados.add(vertice)
     tipo_actual = "canciones" if es_cancion(vertice) else "usuarios"
+    
     for adyacente in grafo.adyacentes(vertice):
         if adyacente not in visitados:
             tipo_ady = "canciones" if es_cancion(adyacente) else "usuarios"
-            pagerank_adyacente = pageranks[tipo_ady][adyacente] 
+            pagerank_adyacente = dicc_pageranks[tipo_ady][adyacente] 
             cant_adyacentes = len(grafo.adyacentes(adyacente))
-            pageranks[tipo_actual][vertice] += pagerank_adyacente / cant_adyacentes
-            page_rank(grafo, pageranks, adyacente, visitados)
+            dicc_pageranks[tipo_actual][vertice] += pagerank_adyacente / cant_adyacentes
+            page_rank(grafo, dicc_pageranks, adyacente, visitados)
 
 def es_cancion(vertice):
     return type(vertice) == tuple
+
+
+#CICLO DE N CANCIONES
+def ciclo_n_canciones(grafo, cancion , n):
+    pass
+
+#TODAS EN RANGO
+def todas_en_rango():
+    pass

@@ -45,7 +45,7 @@ class Grafo:
 
         del self.vertices[vertice]
 
-    def agregar_arista(self,vertice,adyacente,peso):
+    def agregar_arista(self,vertice,adyacente,peso=1):
         if vertice not in self.vertices or adyacente not in self.vertices:
             raise Exception("ERROR:Uno de los vertices no esta en el grafo")
         
