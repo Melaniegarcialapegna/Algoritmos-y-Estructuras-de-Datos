@@ -32,14 +32,6 @@ def main():
     origen = ("Don't Go Away", "Oasis")
     destino = ("Quitter","Eminem")
 
-    vertice = grafo.vertice_aleatorio()
-    probabilidades = {}
-    
-    for i in range(1000):
-        funciones.random_walk(grafo, vertice, 1, probabilidades, 10, 1000)
-    
-
-
-    print(probabilidades)
+    print(funciones.canciones_mas_importantes(grafo,10))
 
 main()
