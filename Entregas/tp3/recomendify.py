@@ -1,5 +1,5 @@
 from grafo import Grafo
-import funciones
+import funciones , random
 
 def crear_grafo_conexiones(ruta):
     grafo = Grafo(False)
@@ -41,7 +41,7 @@ def crear_grafo_canciones(ruta):
                 grafo.agregar_vertice((cancion,artista))
             
             for cancionUsuario in usuarios[id_usuario].keys():
-                grafo.agregar_arista(cancion, cancionUsuario)
+                grafo.agregar_arista((cancion, artista), cancionUsuario)
 
     return grafo, usuarios
 
@@ -50,10 +50,15 @@ def parsear_linea(linea):
     return linea.split("\t")
 
 def main():
-    grafo, usuarios = crear_grafo_conexiones("spotify-mini/spotify-mini.tsv")
-    origen = ("Don't Go Away", "Oasis")
-    destino = ("Quitter","Eminem")
-
-    print(funciones.canciones_mas_importantes(grafo,10))
-
+    grafo, usuarios = crear_grafo_canciones("spotify-mini/spotify-mini.tsv")
+    canciones = [
+        ("Love Story","Taylor Swift"), 
+        ("Toxic", "Britney Spears"),
+        ("I Wanna Be Yours", "Arctic Monkeys"),
+        ("Hips Don't Lie (feat. Wyclef Jean)","Shakira"),
+        ("Death Of A Martian", "Red Hot Chili Peppers")
+    ]
+    print(funciones.recomendacion(grafo, "canciones", canciones, 10))
+    print("----------------------------------------------------------------------")
+    
 main()

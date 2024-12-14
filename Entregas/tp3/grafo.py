@@ -32,7 +32,7 @@ class Grafo:
     # Primitivas
     def agregar_vertice(self,vertice):
         if vertice in self.vertices:
-            raise Exception("ERROR: el vertice ya pertenece al grafo")
+            raise Exception("ERROR: El vertice ya pertenece al grafo")
         self.vertices[vertice]={}
 
     def borrar_vertice(self,vertice):
@@ -47,7 +47,7 @@ class Grafo:
 
     def agregar_arista(self,vertice,adyacente,peso=1):
         if vertice not in self.vertices or adyacente not in self.vertices:
-            raise Exception("ERROR:Uno de los vertices no esta en el grafo")
+            raise Exception("ERROR: Uno de los vertices no esta en el grafo")
         
         self.vertices[vertice][adyacente] = peso
         
@@ -57,7 +57,7 @@ class Grafo:
         
     def borrar_arista(self,vertice,adyacente):
         if vertice not in self.vertices or adyacente not in self.vertices:
-            raise Exception("ERROR:Uno de los vertices no esta en el grafo")
+            raise Exception("ERROR: Uno de los vertices no esta en el grafo")
         
         del self.vertices[vertice][adyacente] 
         

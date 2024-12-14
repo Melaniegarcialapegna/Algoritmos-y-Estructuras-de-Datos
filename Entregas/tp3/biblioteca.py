@@ -74,7 +74,7 @@ def reconstruir_camino(padres, origen, destino):
         actual = padres[actual]
     camino.append(origen)
 
-    return camino
+    return camino[::-1]
 
 #Bellman(?) Hace falta hacerlo??
 
