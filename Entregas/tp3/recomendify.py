@@ -49,19 +49,3 @@ def parsear_linea(linea):
     linea = linea.strip()
     return linea.split("\t")
 
-def main():
-    grafo, usuarios = crear_grafo_canciones("spotify-mini/spotify-mini.tsv")
-    canciones = [
-        ("Love Story","Taylor Swift"), 
-        ("Toxic", "Britney Spears"),
-        ("I Wanna Be Yours", "Arctic Monkeys"),
-        ("Hips Don't Lie (feat. Wyclef Jean)","Shakira"),
-        ("Death Of A Martian", "Red Hot Chili Peppers")
-    ]
-    cancion = ("By The Way","Red Hot Chili Peppers")
-    #print(funciones.recomendacion(grafo, "canciones", canciones, 10))
-    #print("----------------------------------------------------------------------")
-    print(funciones.ciclo_n_canciones(grafo, cancion, 7))
-
-
-main()
