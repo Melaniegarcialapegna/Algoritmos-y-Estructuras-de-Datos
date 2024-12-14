@@ -58,7 +58,10 @@ def main():
         ("Hips Don't Lie (feat. Wyclef Jean)","Shakira"),
         ("Death Of A Martian", "Red Hot Chili Peppers")
     ]
-    print(funciones.recomendacion(grafo, "canciones", canciones, 10))
-    print("----------------------------------------------------------------------")
-    
+    cancion = ("By The Way","Red Hot Chili Peppers")
+    #print(funciones.recomendacion(grafo, "canciones", canciones, 10))
+    #print("----------------------------------------------------------------------")
+    print(funciones.ciclo_n_canciones(grafo, cancion, 7))
+
+
 main()
