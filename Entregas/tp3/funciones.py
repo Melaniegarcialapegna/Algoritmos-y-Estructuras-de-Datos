@@ -143,7 +143,7 @@ def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
 
             if ciclo is not None:
                 return ciclo
-
+    del padres[cancion_actual]
     visitados.remove(cancion_actual)
     return None
 
