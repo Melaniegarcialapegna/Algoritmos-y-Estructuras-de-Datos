@@ -60,18 +60,20 @@ def recomendacion(grafo, tipo, vertices, cantidad): #Cambiar lo de las n !! (que
     probabilidades = {}
 
     for vertice in grafo.obtener_vertices():
-        probabilidades[tipo] = probabilidades.get(tipo, {})
-        probabilidades[tipo][vertice] = 1
+        tipo_actual = "canciones" if es_cancion(vertice) else "usuarios"
+        probabilidades[tipo_actual] = probabilidades.get(tipo_actual, {})
+        probabilidades[tipo_actual][vertice] = 1
 
     for vertice in vertices:
-        random_walk(grafo, vertice, 1, probabilidades, cantidad*cantidad, CANT_RANDOM_WALKS*len(vertices), True)
+        for i in range(500):
+            random_walk(grafo, vertice, 1, probabilidades, 200, True)
     
     return heapq.nlargest(cantidad, probabilidades[tipo].items(), compararPageRank)
 
 def compararPageRank(elemento):
     return elemento[1]
 
-def random_walk(grafo, vertice, probabilidad, probabilidades, largoMax, cantidad,primeraIteracion):
+def random_walk(grafo, vertice, probabilidad, probabilidades, largoMax,primeraIteracion):
     if largoMax == 0:
         return
 
@@ -86,7 +88,7 @@ def random_walk(grafo, vertice, probabilidad, probabilidades, largoMax, cantidad
     probabilidad_sig = probabilidad/len(adyacentes)
 
     siguiente = random.choice(adyacentes)
-    random_walk(grafo, siguiente, probabilidad_sig, probabilidades, largoMax, cantidad,False)
+    random_walk(grafo, siguiente, probabilidad_sig, probabilidades, largoMax,False)
 
 
 #CANCIONES MAS IMPORTANTES

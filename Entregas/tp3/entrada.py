@@ -1,5 +1,5 @@
 
-import sys,funciones,recomendify,biblioteca
+import sys,funciones,recomendify
 
 FLECHA = " --> "
 PUNTO_COMA = ";"
@@ -78,14 +78,22 @@ def main():
     with open(ruta, "r") as archivo:
         dicc_usuarios = obtener_data(archivo)
         
-        grafoConexiones, usuarios = recomendify.crear_grafo_conexiones(ruta)
-        grafoCanciones, usuariosCanciones = recomendify.crear_grafo_canciones(ruta)
-
+    condicion1 = True
+    condicion2 = True
 
     while entrada != "":
         argumentos = entrada.split()
         comando = argumentos[0]
         
+        if comando== "ciclo" or comando== "rango":
+            if condicion2:
+                grafoCanciones, usuariosCanciones = recomendify.crear_grafo_canciones(ruta)
+                condicion2 = False
+        else:
+            if condicion1:
+                grafoConexiones, usuarios = recomendify.crear_grafo_conexiones(ruta)
+                condicion1 = False
+
         if comando =="camino":
             origen = argumentos[1]
             destino = argumentos[2]
@@ -112,7 +120,8 @@ def main():
             canciones = [sacar_cancion(cancion) for cancion in canciones_pre] 
             
             cancion = obtener_cancion(argumentos[2:], "-")
-            print(funciones.recomendacion(grafoConexiones, tipo, canciones, n))
+            resultado = funciones.recomendacion(grafoConexiones, tipo, canciones, n)
+            salida(resultado,PUNTO_COMA)
 
         elif comando == "ciclo":
             n = int(argumentos[1])
