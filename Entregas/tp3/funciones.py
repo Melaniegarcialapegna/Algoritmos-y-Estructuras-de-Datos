@@ -13,8 +13,14 @@ COEFICIENTE_AMORTIGUACION = 0.7
 #CAMINO MAS CORTO
 def camino_mas_corto(grafo,origen,destino, usuarios):
     padres, distancia = biblioteca.bfs(grafo, origen)
-    camino = biblioteca.reconstruir_camino(padres, origen, destino)
     
+    if not distancia in destino:
+        print("No se encontro recorrido")
+        return 
+    
+    camino = biblioteca.reconstruir_camino(padres, origen, destino)
+     
+
     i = 0
 
     while i < len(camino) - 2:
