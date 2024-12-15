@@ -14,12 +14,11 @@ COEFICIENTE_AMORTIGUACION = 0.7
 def camino_mas_corto(grafo,origen,destino, usuarios):
     padres, distancia = biblioteca.bfs(grafo, origen)
     
-    if not distancia in destino:
+    if not destino in distancia:
         print("No se encontro recorrido")
         return 
     
     camino = biblioteca.reconstruir_camino(padres, origen, destino)
-     
 
     i = 0
 
@@ -127,34 +126,66 @@ def page_rank(grafo, dicc_pageranks):
 def es_cancion(vertice):
     return type(vertice) == tuple
 
-def ciclo_n_canciones(grafo, cancion, n):
-    padres = {}
-    padres[cancion]= None
-    visitados = set()
-    visitados.add(cancion)
+# def ciclo_n_canciones(grafo, cancion, n):
+#     padres = {}
+#     padres[cancion]= None
+#     visitados = set()
+#     visitados.add(cancion)
 
-    ciclo = _ciclo_n_canciones(grafo, cancion, cancion, n, padres,visitados)
+#     ciclo = _ciclo_n_canciones(grafo, cancion, cancion, n, padres,visitados)
+#     if ciclo is not None:
+#         ciclo.append(cancion)
+#     return ciclo
+
+# #CICLO DE N CANCIONES
+# def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
+#     for adyacente in grafo.adyacentes(cancion_actual):
+#         if n == 1:
+#             if adyacente == cancion:
+#                 return biblioteca.reconstruir_camino(padres, cancion, cancion_actual)
+#         elif adyacente not in visitados:
+#             visitados.add(adyacente)
+#             padres[adyacente] = cancion_actual
+#             ciclo = _ciclo_n_canciones(grafo,cancion,adyacente,n-1,padres,visitados)
+
+#             if ciclo is not None:
+#                 return ciclo
+#             visitados.remove(adyacente)
+#     #del padres[cancion_actual]
+#     #visitados.remove(cancion_actual)
+#     return None
+
+def ciclo_n_canciones(grafo, cancion, n):
+    visitados = set()
+    padres = {}
+    padres[cancion] = None  # Inicializar el nodo raíz sin padre
+    
+    ciclo = dfs_ciclo(grafo, cancion, cancion, visitados, padres, n)
     if ciclo is not None:
         ciclo.append(cancion)
     return ciclo
 
-#CICLO DE N CANCIONES
-def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
-    for adyacente in grafo.adyacentes(cancion_actual):
-        if n == 1:
-            if adyacente == cancion:
-                return biblioteca.reconstruir_camino(padres, cancion, cancion_actual)
-        elif adyacente not in visitados:
-            visitados.add(adyacente)
-            padres[adyacente] = cancion_actual
-            ciclo = _ciclo_n_canciones(grafo,cancion,adyacente,n-1,padres,visitados)
+def dfs_ciclo(grafo, cancion_origen, cancion_actual, visitados, padres, n):
+    visitados.add(cancion_actual)
+    print(cancion_actual)
+    if n <= 0:
+        return None
 
+    for adyacente in grafo.adyacentes(cancion_actual):
+        if adyacente in visitados and n == 1:
+            # Si w fue visitado y no es el padre de v, se detecta un ciclo
+            if adyacente != padres[cancion_actual] and adyacente == cancion_origen:
+                return biblioteca.reconstruir_camino(padres, cancion_origen, cancion_actual)
+        else:
+            padres[adyacente] = cancion_actual
+            ciclo = dfs_ciclo(grafo, cancion_origen, adyacente, visitados, padres, n-1)
             if ciclo is not None:
                 return ciclo
             visitados.remove(adyacente)
-    #del padres[cancion_actual]
-    #visitados.remove(cancion_actual)
+
     return None
+
+
 
 
 #TODAS EN RANGO

@@ -76,6 +76,5 @@ def reconstruir_camino(padres, origen, destino):
 
     return camino[::-1]
 
-#Bellman(?) Hace falta hacerlo??
 
 

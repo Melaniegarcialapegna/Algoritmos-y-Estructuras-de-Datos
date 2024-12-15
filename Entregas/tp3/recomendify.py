@@ -102,14 +102,13 @@ def obtener_data(archivo):
 
 
 def salida(resultado,separador):
-    if resultado is not None: # Ver pq no claro error
-        for i in range(len(resultado)):
-            if separador == PUNTO_COMA:
-                print(" - ".join(resultado[i][0]), end="")
-            else:
-                print(" - ".join(resultado[i]), end="")
-            if i < len(resultado)-1:
-                print(f"{separador} ", end="")
+    for i in range(len(resultado)):
+        if separador == PUNTO_COMA:
+            print(" - ".join(resultado[i][0]), end="")
+        else:
+            print(" - ".join(resultado[i]), end="")
+        if i < len(resultado)-1:
+            print(f"{separador} ", end="")
 
 
 
@@ -141,9 +140,9 @@ def main():
             destino = argumentos[2]
             
             canciones_list = obtener_cancion(argumentos[1:], ">>>>")
-            origen, destino = [obtener_cancion(cancion, "-") for cancion in canciones_list]
-            origen = (" ".join(origen[0]), " ".join(origen[1]))
-            destino = (" ".join(destino[0]), " ".join(destino[1]))
+            origen_lista, destino_lista = [obtener_cancion(cancion, "-") for cancion in canciones_list]
+            origen = sacar_cancion(origen_lista)
+            destino = sacar_cancion(destino_lista)
 
             funciones.camino_mas_corto(grafoConexiones,origen,destino, dicc_usuarios)
             
@@ -169,9 +168,10 @@ def main():
             lista = obtener_cancion(argumentos[2:], "-")
             cancion = sacar_cancion(lista)
             lista = funciones.ciclo_n_canciones(grafoCanciones, cancion,n)
-            if lista is None:
+            if lista == None:
                 print("No se encontro recorrido.")
-            print(salida(lista,FLECHA))
+            else:
+                salida(lista,FLECHA)
 
         elif comando == "rango":
             n = int(argumentos[1])
