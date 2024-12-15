@@ -10,7 +10,7 @@ class Grafo:
         if vertices != None:
             for vertice in vertices:
                 self.agregar_vertice(vertice)
-    # dic -> { Vertice:{ Ady:Peso , Ady:Peso}, Vertice:{ Ady:Peso , Ady:Peso},etc.. }
+    # dic -> { Verticencion:{ Ady:Peso , Ady:Peso}, Vertice:{ Ady:Peso , Ady:Peso},etc.. }
 
     #Iterador
     def __iter__(self):

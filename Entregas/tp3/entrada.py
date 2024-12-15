@@ -91,7 +91,7 @@ def main():
                 condicion2 = False
         else:
             if condicion1:
-                grafoConexiones, usuarios = recomendify.crear_grafo_conexiones(ruta)
+                grafoConexiones = recomendify.crear_grafo_conexiones(dicc_usuarios)
                 condicion1 = False
 
         if comando =="camino":
