@@ -132,32 +132,34 @@ def es_cancion(vertice):
     return type(vertice) == tuple
 
 def ciclo_n_canciones(grafo, cancion, n):
-    '''Esta funcion se encarga de buscar un ciclo de n vertices que comience y termine en el vertice pasado por parametro'''
-    camino = []
-    camino.append(cancion)
-    return backtracking(grafo, cancion, cancion, n, camino)
+    padres = {}
+    padres[cancion]= None
+    visitados = set()
+    visitados.add(cancion)
+    print(cancion, n)
+    ciclo = _ciclo_n_canciones(grafo, cancion, cancion, n, padres,visitados)
+    if ciclo is not None:
+        ciclo.append(cancion)
+    return ciclo
 
-#CICLO DE N CANCIONES
-def backtracking(grafo, origen, vertice, n, camino):
-    '''Algoritmo llamado en buscar_ciclo'''
-    if((len(camino) == n+1) and (vertice == origen)):
-        return True, camino
-    for adyacente in grafo.adyacentes(vertice):
-        if (adyacente != origen):
-            if adyacente in camino:
-                continue
-        if (adyacente == origen):
-            if len(camino) != n:
-                continue
-        if len(camino) > n:
-            return False, camino
-        camino.append(adyacente)
-        booleano, camino = backtracking(grafo, origen, adyacente, n, camino)
-        if booleano == False: 
-            camino.remove(adyacente)
-        else:
-            return True, camino
-    return False, camino
+# #CICLO DE N CANCIONES
+def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
+    print(cancion_actual, n)
+    for adyacente in grafo.adyacentes(cancion_actual):
+        if n == 1:
+            if adyacente == cancion:
+                return biblioteca.reconstruir_camino(padres, cancion, cancion_actual)
+        elif adyacente not in visitados:
+            visitados.add(adyacente)
+            padres[adyacente] = cancion_actual
+            ciclo = _ciclo_n_canciones(grafo,cancion,adyacente,n-1,padres,visitados)
+
+            if ciclo is not None:
+                return ciclo
+            visitados.remove(adyacente)
+    #del padres[cancion_actual]
+    #visitados.remove(cancion_actual)
+    return None
 
 #TODAS EN RANGO
 def todas_en_rango(grafo,cancion,n):

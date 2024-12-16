@@ -35,6 +35,12 @@ def crear_grafo_canciones(ruta):
             for cancionUsuario in usuarios[id_usuario].keys():
                 grafo.agregar_arista((cancion, artista), cancionUsuario)
 
+            # canciones_usuario = list(usuarios[id_usuario].keys())  # Todas las canciones del usuario
+            # for i in range(len(canciones_usuario)):
+            #     for j in range(i + 1, len(canciones_usuario)):
+            #         # Conectamos la canción i con la canción j
+            #         grafo.agregar_arista(canciones_usuario[i], canciones_usuario[j])    
+
     return grafo, usuarios
 
 def parsear_linea(linea):
@@ -99,8 +105,6 @@ def obtener_data(archivo):
     
     return usuarios
 
-
-
 def salida(resultado,separador):
     for i in range(len(resultado)):
         if separador == PUNTO_COMA:
@@ -109,10 +113,8 @@ def salida(resultado,separador):
             print(" - ".join(resultado[i]), end="")
         if i < len(resultado)-1:
             print(f"{separador} ", end="")
-    print("", end="\n")
+    print("")
     return
-
-
 
 def main():
     ruta = sys.argv[1]
@@ -177,9 +179,8 @@ def main():
             n = int(argumentos[1])
             lista = obtener_cancion(argumentos[2:], "-")
             cancion = sacar_cancion(lista)
+            print("aca")
             lista = funciones.ciclo_n_canciones(grafoCanciones, cancion,n)
-            with open("resultado.txt", "w") as archivo:
-                archivo.write(str(lista))
             if lista is None:
                 print("No se encontro recorrido.")
             else:
