@@ -31,6 +31,7 @@ def crear_grafo_canciones(usuarios):
 
     return grafo
 
+
 def parsear_linea(linea):
     linea = linea.strip()
     return linea.split("\t")
@@ -99,11 +100,13 @@ def salida(resultado,separador):
         if separador == PUNTO_COMA:
             print(" - ".join(resultado[i][0]), end="")
             # salida += " - ".join(resultado[i][0])
+            if i < len(resultado)-1:
+                print(f"{separador} ", end="")
         else:
             print(" - ".join(resultado[i]), end="")
             # salida += " - ".join(resultado[i])
-        if i < len(resultado)-1:
-            print(f"{separador} ", end="")
+            if i < len(resultado)-1:
+                print(f"{separador}", end="")
             # salida += f"{separador} "
     print(" ")
     # salida += "\n"
@@ -180,7 +183,7 @@ def main():
             cancion = sacar_cancion(lista)
             lista = funciones.ciclo_n_canciones(grafoCanciones, cancion,n)
             if lista is None:
-                print("No se encontro recorrido.")
+                print("No se encontro recorrido")
             else:
                 salida(lista,FLECHA)
 
