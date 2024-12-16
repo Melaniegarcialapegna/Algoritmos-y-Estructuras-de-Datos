@@ -178,6 +178,8 @@ def main():
             lista = obtener_cancion(argumentos[2:], "-")
             cancion = sacar_cancion(lista)
             lista = funciones.ciclo_n_canciones(grafoCanciones, cancion,n)
+            with open("resultado.txt", "w") as archivo:
+                archivo.write(str(lista))
             if lista is None:
                 print("No se encontro recorrido.")
             else:

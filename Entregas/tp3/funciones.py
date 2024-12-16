@@ -6,9 +6,9 @@ MSJ_CONECTOR = "de"
 MSJ_PLAYLIST_CONTIENE = "donde aparece"
 MSJ_USUARIO_TIENE_PLAYLIST = "tiene una playlist"
 CANT_RANDOM_WALKS = 500
-CANT_PAGE_RANKS = 200
+CANT_PAGE_RANKS = 300
 LARGO_RANDOM_WALK = 100
-COEFICIENTE_AMORTIGUACION = 0.7
+COEFICIENTE_AMORTIGUACION = 0.85
 
 #CAMINO MAS CORTO
 def camino_mas_corto(grafo,origen,destino, usuarios):
@@ -105,7 +105,8 @@ def canciones_mas_importantes(grafo,n):
 
     for vertice in vertices:
         tipo = "canciones" if es_cancion(vertice) else "usuarios"
-        pageranks[tipo] = pageranks.get(tipo, {})
+        if tipo not in pageranks:
+            pageranks[tipo] = {}
         pageranks[tipo][vertice] = (1-COEFICIENTE_AMORTIGUACION)/len(vertices)
 
     for i in range(CANT_PAGE_RANKS):
@@ -118,43 +119,45 @@ def page_rank(grafo, dicc_pageranks):
     
     for vertice in grafo.obtener_vertices():
         tipo_actual = "canciones" if es_cancion(vertice) else "usuarios"
-        for adyacente in grafo.adyacentes(vertice):
-            tipo_ady = "canciones" if es_cancion(adyacente) else "usuarios"
-            pagerank_adyacente = dicc_pageranks[tipo_ady][adyacente] 
-            cant_adyacentes = len(grafo.adyacentes(adyacente))
-            dicc_pageranks[tipo_actual][vertice] += COEFICIENTE_AMORTIGUACION * (pagerank_adyacente / cant_adyacentes)
+        if tipo_actual == "canciones":
+            pageRank_articulo = dicc_pageranks[tipo_actual][vertice]
+            for adyacente in grafo.adyacentes(vertice):
+                tipo_ady = "canciones" if es_cancion(adyacente) else "usuarios"
+                pagerank_adyacente = dicc_pageranks[tipo_ady].get(adyacente,0)
+                cant_adyacentes = len(grafo.adyacentes(adyacente))
+                pageRank_articulo += COEFICIENTE_AMORTIGUACION * (pagerank_adyacente / cant_adyacentes) 
+            dicc_pageranks[tipo_actual][vertice] = pageRank_articulo
 
 def es_cancion(vertice):
     return type(vertice) == tuple
 
 def ciclo_n_canciones(grafo, cancion, n):
-    padres = {}
-    padres[cancion]= None
-    visitados = set()
-    visitados.add(cancion)
-
-    ciclo = _ciclo_n_canciones(grafo, cancion, cancion, n, padres,visitados)
-    if ciclo is not None:
-        ciclo.append(cancion)
-    return ciclo
+    '''Esta funcion se encarga de buscar un ciclo de n vertices que comience y termine en el vertice pasado por parametro'''
+    camino = []
+    camino.append(cancion)
+    return backtracking(grafo, cancion, cancion, n, camino)
 
 #CICLO DE N CANCIONES
-def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
-    for adyacente in grafo.adyacentes(cancion_actual):
-        if n == 1:
-            if adyacente == cancion:
-                return biblioteca.reconstruir_camino(padres, cancion, cancion_actual)
-        elif adyacente not in visitados:
-            visitados.add(adyacente)
-            padres[adyacente] = cancion_actual
-            ciclo = _ciclo_n_canciones(grafo,cancion,adyacente,n-1,padres,visitados)
-
-            if ciclo is not None:
-                return ciclo
-            visitados.remove(adyacente)
-    #del padres[cancion_actual]
-    #visitados.remove(cancion_actual)
-    return None
+def backtracking(grafo, origen, vertice, n, camino):
+    '''Algoritmo llamado en buscar_ciclo'''
+    if((len(camino) == n+1) and (vertice == origen)):
+        return True, camino
+    for adyacente in grafo.adyacentes(vertice):
+        if (adyacente != origen):
+            if adyacente in camino:
+                continue
+        if (adyacente == origen):
+            if len(camino) != n:
+                continue
+        if len(camino) > n:
+            return False, camino
+        camino.append(adyacente)
+        booleano, camino = backtracking(grafo, origen, adyacente, n, camino)
+        if booleano == False: 
+            camino.remove(adyacente)
+        else:
+            return True, camino
+    return False, camino
 
 #TODAS EN RANGO
 def todas_en_rango(grafo,cancion,n):
