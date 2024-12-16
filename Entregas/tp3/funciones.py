@@ -61,7 +61,7 @@ def obtener_playlist(usuarios, cancion, usuario):
 
 
 #RECOMENCACIONES(CANCIONES Y USUARIOS)
-def recomendacion(grafo, tipo, vertices, cantidad): #Cambiar lo de las n !! (quedo viejo -> hay que hacer lo de las listas)
+def recomendacion(grafo, tipo, vertices, cantidad): 
     probabilidades = {}
 
     for vertice in grafo.obtener_vertices():
@@ -74,6 +74,7 @@ def recomendacion(grafo, tipo, vertices, cantidad): #Cambiar lo de las n !! (que
             random_walk(grafo, vertice, 1, probabilidades, 200, True)
     
     return heapq.nlargest(cantidad, probabilidades[tipo].items(), compararPageRank)
+
 
 def compararPageRank(elemento):
     return elemento[1]
@@ -126,67 +127,34 @@ def page_rank(grafo, dicc_pageranks):
 def es_cancion(vertice):
     return type(vertice) == tuple
 
-# def ciclo_n_canciones(grafo, cancion, n):
-#     padres = {}
-#     padres[cancion]= None
-#     visitados = set()
-#     visitados.add(cancion)
-
-#     ciclo = _ciclo_n_canciones(grafo, cancion, cancion, n, padres,visitados)
-#     if ciclo is not None:
-#         ciclo.append(cancion)
-#     return ciclo
-
-# #CICLO DE N CANCIONES
-# def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
-#     for adyacente in grafo.adyacentes(cancion_actual):
-#         if n == 1:
-#             if adyacente == cancion:
-#                 return biblioteca.reconstruir_camino(padres, cancion, cancion_actual)
-#         elif adyacente not in visitados:
-#             visitados.add(adyacente)
-#             padres[adyacente] = cancion_actual
-#             ciclo = _ciclo_n_canciones(grafo,cancion,adyacente,n-1,padres,visitados)
-
-#             if ciclo is not None:
-#                 return ciclo
-#             visitados.remove(adyacente)
-#     #del padres[cancion_actual]
-#     #visitados.remove(cancion_actual)
-#     return None
-
 def ciclo_n_canciones(grafo, cancion, n):
-    visitados = set()
     padres = {}
-    padres[cancion] = None  # Inicializar el nodo raíz sin padre
-    
-    ciclo = dfs_ciclo(grafo, cancion, cancion, visitados, padres, n)
+    padres[cancion]= None
+    visitados = set()
+    visitados.add(cancion)
+
+    ciclo = _ciclo_n_canciones(grafo, cancion, cancion, n, padres,visitados)
     if ciclo is not None:
         ciclo.append(cancion)
     return ciclo
 
-def dfs_ciclo(grafo, cancion_origen, cancion_actual, visitados, padres, n):
-    visitados.add(cancion_actual)
-    print(cancion_actual)
-    if n <= 0:
-        return None
-
+#CICLO DE N CANCIONES
+def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
     for adyacente in grafo.adyacentes(cancion_actual):
-        if adyacente in visitados and n == 1:
-            # Si w fue visitado y no es el padre de v, se detecta un ciclo
-            if adyacente != padres[cancion_actual] and adyacente == cancion_origen:
-                return biblioteca.reconstruir_camino(padres, cancion_origen, cancion_actual)
-        else:
+        if n == 1:
+            if adyacente == cancion:
+                return biblioteca.reconstruir_camino(padres, cancion, cancion_actual)
+        elif adyacente not in visitados:
+            visitados.add(adyacente)
             padres[adyacente] = cancion_actual
-            ciclo = dfs_ciclo(grafo, cancion_origen, adyacente, visitados, padres, n-1)
+            ciclo = _ciclo_n_canciones(grafo,cancion,adyacente,n-1,padres,visitados)
+
             if ciclo is not None:
                 return ciclo
             visitados.remove(adyacente)
-
+    #del padres[cancion_actual]
+    #visitados.remove(cancion_actual)
     return None
-
-
-
 
 #TODAS EN RANGO
 def todas_en_rango(grafo,cancion,n):

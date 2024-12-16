@@ -109,6 +109,8 @@ def salida(resultado,separador):
             print(" - ".join(resultado[i]), end="")
         if i < len(resultado)-1:
             print(f"{separador} ", end="")
+    print("", end="\n")
+    return
 
 
 
@@ -141,11 +143,13 @@ def main():
             
             canciones_list = obtener_cancion(argumentos[1:], ">>>>")
             origen_lista, destino_lista = [obtener_cancion(cancion, "-") for cancion in canciones_list]
-            origen = sacar_cancion(origen_lista)
-            destino = sacar_cancion(destino_lista)
+            if len(origen_lista) >= 2 and len(destino_lista) >= 2:
+                origen = sacar_cancion(origen_lista)
+                destino = sacar_cancion(destino_lista)
+                funciones.camino_mas_corto(grafoConexiones,origen,destino, dicc_usuarios)
+            else:
+                print("Tanto el origen como el destino deben ser canciones")
 
-            funciones.camino_mas_corto(grafoConexiones,origen,destino, dicc_usuarios)
-            
         elif comando == "mas_importantes":
             cantidad = int(argumentos[1])
             resultado = funciones.canciones_mas_importantes(grafoConexiones, cantidad)
@@ -161,14 +165,20 @@ def main():
             
             cancion = obtener_cancion(argumentos[2:], "-")
             resultado = funciones.recomendacion(grafoConexiones, tipo, canciones, n)
-            salida(resultado,PUNTO_COMA)
+            if tipo == "canciones":
+                salida(resultado,PUNTO_COMA)
+            else:
+                for i in range(len(resultado)):
+                    print(resultado[i][0], end="")
+                    if i < len(resultado)-1:
+                        print("; ", end="")
 
         elif comando == "ciclo":
             n = int(argumentos[1])
             lista = obtener_cancion(argumentos[2:], "-")
             cancion = sacar_cancion(lista)
             lista = funciones.ciclo_n_canciones(grafoCanciones, cancion,n)
-            if lista == None:
+            if lista is None:
                 print("No se encontro recorrido.")
             else:
                 salida(lista,FLECHA)
