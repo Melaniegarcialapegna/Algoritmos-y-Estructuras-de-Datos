@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 from grafo import Grafo
-import funciones , sys, csv
+import funciones , sys, heapq
 
 def crear_grafo_conexiones(usuarios):
     grafo = Grafo(False)
@@ -15,33 +15,21 @@ def crear_grafo_conexiones(usuarios):
     
     return grafo
 
-def crear_grafo_canciones(ruta):
+def crear_grafo_canciones(usuarios):
     grafo = Grafo(False)
-    usuarios = {}
-    
-    #Esto se hace de vuelta arriba. Poner en una funcion tipo obtenerData
-    with open(ruta, "r") as archivo:
-        for linea in archivo:
-            data = parsear_linea(linea)
-            id_linea, id_usuario, cancion, artista, playlist_id, playlist, generos = data
-            
-            usuarios[id_usuario] = usuarios.get(id_usuario, {})
-            usuarios[id_usuario][(cancion, artista)] = usuarios[id_usuario].get((cancion, artista), {})
-            usuarios[id_usuario][(cancion, artista)][playlist_id] = playlist
+
+    for id_usuario in usuarios:
+        for cancion in usuarios[id_usuario]:
+            if not cancion in grafo:
+                grafo.agregar_vertice(cancion)
         
-            if not (cancion, artista) in grafo:
-                grafo.agregar_vertice((cancion,artista))
-            
-            for cancionUsuario in usuarios[id_usuario].keys():
-                grafo.agregar_arista((cancion, artista), cancionUsuario)
+        canciones_usuario = list(usuarios[id_usuario].keys())
+        for i in range(len(canciones_usuario)):
+            for j in range(i+1, len(canciones_usuario)):
+                if not grafo.estan_unidos(canciones_usuario[i], canciones_usuario[j]):
+                    grafo.agregar_arista(canciones_usuario[i], canciones_usuario[j])
 
-            # canciones_usuario = list(usuarios[id_usuario].keys())  # Todas las canciones del usuario
-            # for i in range(len(canciones_usuario)):
-            #     for j in range(i + 1, len(canciones_usuario)):
-            #         # Conectamos la canción i con la canción j
-            #         grafo.agregar_arista(canciones_usuario[i], canciones_usuario[j])    
-
-    return grafo, usuarios
+    return grafo
 
 def parsear_linea(linea):
     linea = linea.strip()
@@ -106,14 +94,21 @@ def obtener_data(archivo):
     return usuarios
 
 def salida(resultado,separador):
+    # salida = ""
     for i in range(len(resultado)):
         if separador == PUNTO_COMA:
             print(" - ".join(resultado[i][0]), end="")
+            # salida += " - ".join(resultado[i][0])
         else:
             print(" - ".join(resultado[i]), end="")
+            # salida += " - ".join(resultado[i])
         if i < len(resultado)-1:
             print(f"{separador} ", end="")
-    print("")
+            # salida += f"{separador} "
+    print(" ")
+    # salida += "\n"
+    # with open("./resultado.txt", "w") as archivo:
+        # archivo.write(salida)
     return
 
 def main():
@@ -125,6 +120,7 @@ def main():
         
     condicion1 = True
     condicion2 = True
+    dicc_pagerank = None
 
     while entrada != "":
         argumentos = entrada.split()
@@ -132,7 +128,7 @@ def main():
         
         if comando== "ciclo" or comando== "rango":
             if condicion2:
-                grafoCanciones, usuariosCanciones = crear_grafo_canciones(ruta)
+                grafoCanciones = crear_grafo_canciones(dicc_usuarios)
                 condicion2 = False
         else:
             if condicion1:
@@ -154,8 +150,11 @@ def main():
 
         elif comando == "mas_importantes":
             cantidad = int(argumentos[1])
-            resultado = funciones.canciones_mas_importantes(grafoConexiones, cantidad)
-            #Devuelve una lista de tuplas
+            if dicc_pagerank is None:
+                dicc_pagerank = funciones.canciones_mas_importantes(grafoConexiones, cantidad)
+            
+            resultado = heapq.nlargest(cantidad, dicc_pagerank["canciones"].items(), funciones.compararPageRank)
+            
             salida(resultado,PUNTO_COMA)
 
         elif comando == "recomendacion":
