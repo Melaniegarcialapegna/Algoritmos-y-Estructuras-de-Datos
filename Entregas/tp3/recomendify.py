@@ -179,7 +179,6 @@ def main():
             n = int(argumentos[1])
             lista = obtener_cancion(argumentos[2:], "-")
             cancion = sacar_cancion(lista)
-            print("aca")
             lista = funciones.ciclo_n_canciones(grafoCanciones, cancion,n)
             if lista is None:
                 print("No se encontro recorrido.")

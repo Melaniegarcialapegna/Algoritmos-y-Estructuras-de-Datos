@@ -136,15 +136,13 @@ def ciclo_n_canciones(grafo, cancion, n):
     padres[cancion]= None
     visitados = set()
     visitados.add(cancion)
-    print(cancion, n)
-    ciclo = _ciclo_n_canciones(grafo, cancion, cancion, n, padres,visitados)
+    ciclo = _ciclo_n_canciones(grafo, cancion, cancion, n-1, padres,visitados)
     if ciclo is not None:
         ciclo.append(cancion)
     return ciclo
 
 # #CICLO DE N CANCIONES
 def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
-    print(cancion_actual, n)
     for adyacente in grafo.adyacentes(cancion_actual):
         if n == 1:
             if adyacente == cancion:
@@ -157,7 +155,7 @@ def _ciclo_n_canciones(grafo, cancion, cancion_actual, n, padres, visitados):
             if ciclo is not None:
                 return ciclo
             visitados.remove(adyacente)
-    #del padres[cancion_actual]
+            del padres[adyacente]
     #visitados.remove(cancion_actual)
     return None
 
