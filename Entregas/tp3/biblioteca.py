@@ -10,6 +10,9 @@ def camino_mas_corto(grafo,origen,destino):
     """Devuelve el camino mas corto entre dos canciones"""
     padres, distancia = auxiliares.bfs(grafo, origen)
 
+    if not destino in distancia:
+        return None
+
     return auxiliares.reconstruir_camino(padres, origen, destino)
 
 #Mas importantes

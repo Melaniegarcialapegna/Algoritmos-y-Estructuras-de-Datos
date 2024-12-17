@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 from grafo import Grafo
-import auxiliares ,biblioteca, salida, sys, heapq
+import auxiliares, biblioteca, salida, sys, heapq
+
+FLECHA = " --> "
+PUNTO_COMA = ";"
 
 def crear_grafo_conexiones(usuarios):
     """Crea un grafo bipartito en el cual los vertices son los usuarios y las canciones, las aristas son las conexiones entre ellos"""
@@ -90,11 +93,11 @@ def main():
         elif comando == "mas_importantes":
             cantidad = int(argumentos[1])
             if dicc_pagerank is None:
-                dicc_pagerank = biblioteca.canciones_mas_importantes(grafoConexiones, cantidad)
+                dicc_pagerank = biblioteca.canciones_mas_importantes(grafoConexiones)
             
             resultado = heapq.nlargest(cantidad, dicc_pagerank["canciones"].items(), biblioteca.compararPageRank)
             
-            salida.salida_canciones(resultado,auxiliares.PUNTO_COMA)
+            salida.salida_canciones(resultado,PUNTO_COMA)
 
         elif comando == "recomendacion":
             tipo = argumentos[1]
@@ -106,7 +109,7 @@ def main():
             cancion = auxiliares.separar_listas(argumentos[2:], "-")
             resultado = biblioteca.recomendacion(grafoConexiones, tipo, canciones, n)
             if tipo == "canciones":
-                salida.salida_canciones(resultado,auxiliares.PUNTO_COMA)
+                salida.salida_canciones(resultado,PUNTO_COMA)
             else:
                 salida.salida_usuarios(resultado)
 
@@ -118,7 +121,7 @@ def main():
             if lista is None:
                 print("No se encontro recorrido")
             else:
-                salida.salida_canciones(lista,auxiliares.FLECHA)
+                salida.salida_canciones(lista,FLECHA)
 
         elif comando == "rango":
             n = int(argumentos[1])

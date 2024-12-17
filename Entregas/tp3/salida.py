@@ -9,14 +9,15 @@ MSJ_USUARIO_TIENE_PLAYLIST = "tiene una playlist"
 
 def salida_camino_mas_corto(camino,usuarios):
     """Imprime el camino mas corto en el formato solicitado"""
-    if camino == None:
+    if camino is None:
+        print("No se encontro recorrido")
         return
+
     i = 0
     while i < len(camino) - 2:
         cancion = camino[i]
         cancionStr = " - ".join(cancion)
         usuario = camino[i+1]
-        
         cancionSig = camino[i+2]
         cancionSigStr = " - ".join(cancionSig)
 
