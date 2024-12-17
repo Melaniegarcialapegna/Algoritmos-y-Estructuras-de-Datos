@@ -1,16 +1,12 @@
-
-#Implementacion de TDA Grafo
-import random
+import random 
 
 class Grafo:
     def __init__(self,es_dirigido,vertices=None):
         self.es_dirigido = es_dirigido
-        #Lo hacemos con dicc de dicc
         self.vertices = {}
         if vertices != None:
             for vertice in vertices:
                 self.agregar_vertice(vertice)
-    # dic -> { Verticencion:{ Ady:Peso , Ady:Peso}, Vertice:{ Ady:Peso , Ady:Peso},etc.. }
 
     #Iterador
     def __iter__(self):
@@ -54,7 +50,6 @@ class Grafo:
         if not self.es_dirigido: 
             self.vertices[adyacente][vertice] = peso
         
-        
     def borrar_arista(self,vertice,adyacente):
         if vertice not in self.vertices or adyacente not in self.vertices:
             raise Exception("ERROR: Uno de los vertices no esta en el grafo")
@@ -75,7 +70,6 @@ class Grafo:
             raise Exception("ERROR: Los ver")
 
         return self.vertices[vertice][adyacente]        
-
 
     def obtener_vertices(self): 
         return self.vertices.keys()
