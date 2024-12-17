@@ -1,82 +1,105 @@
-# Trabajo Práctico 0
+# TP1: Calculadora Polaca Inversa
 
-El adjunto en el sitio de descargas contiene varios archivos. Deben editar el archivo `tp0.go`, completando las seis funciones que aparecen en el código fuente: `Swap()`, `Maximo()`, `Comparar()`, `Seleccion()`, `Suma()` y `EsCadenaCapicua()`. Se puede ver en el archivo `tp0.go` la documentación que indica lo que debe hacer cada función.
+El trabajo práctico número 1 tiene fecha de entrega para el día 26/09.
 
-De todos los archivos que pueden encontrar en el sitio de descargas, sólo deben modificar `tp0.go`. El resto de archivos del zip no los deben modificar. Sí pueden, no obstante, leer el archivo `tp0_test.go` para entender qué verificaciones realizaremos sobre su código.
+## Contenido
+- Previo al enunciado
+- Calculadora en notación posfija
+- Funcionamiento
+- Formato de entrada
+- Condiciones de error
+- Criterios de aprobación
 
-Primero deben crear el módulo del tp0 en el directorio que vayan a usar para este (`go mod init tp0`). Para esta primera parte del tp deben crear un paquete llamado `ejercicios` que contenga tanto a `tp0.go` como a `tp0_test.go`. Luego, fuera de este paquete (en el nivel principal del módulo a implementar) debe haber un archivo que puede llamarse como gusten (por ejemplo `main.go`) que tenga el paquete `main` (obligatorio en todos los programas escritos en Go), donde estará el código del programa a implementar.
+## Previo al enunciado
 
-En resumen, para funcionar correctamente deben tener una estructura de directorios y archivos como la siguiente:
+Como se ha indicado en clase, esperamos para la elaboración de este trabajo práctico que ya tengan conocimiento pleno del uso de Go, lo cual incluye todo lo visto en clase y lo explicado en los videos sobre el lenguaje. Si no se ha visto alguno de los videos, es necesario que primero lo revisen porque este enunciado asume que esto es sabido.
 
-```
-tp0 (o como gusten llamarle al directorio del tp)
-| -> main.go
-| -> go.mod
-| -> ejercicios
-    | -> tp0.go
-    | -> tp0_test.go
-```
+También, recomendamos volver a revisar el video sobre cómo armar los módulos en Go, en particular para los TPs.
 
-Recuerden hacer `go mod tidy`. Para la primera parte del tp simplemente pueden ejecutar
+## Calculadora en notación posfija
 
-Las pruebas deben dar todas OK, y las pueden ejecutar con:
+Se pide implementar un programa `dc` que permita realizar operaciones matemáticas. La calculadora leerá exclusivamente de entrada estándar (no toma argumentos por línea de comandos), interpretando cada línea como una operación en notación polaca inversa (también llamada notación posfija, en inglés reverse Polish notation); para cada línea, se imprimirá por salida estándar el resultado del cálculo.
 
-```sh
-cd ejercicios
-go test tp0_test.go
-```
-
-O simplemente:
+Ejemplo de varias operaciones, y su resultado:
 
 ```sh
-cd ejercicios
-go test
-```
+$ cat oper.txt
+5 3 +
+5 3 -
+5 3 /
+3 5 8 + +
+3 5 8 + -
+3 5 - 8 +
+2 2 + +
+0 1 ?
+1 -1 0 ?
+5 sqrt
 
-Luego que todas las pruebas ejecuten correctamente, deben implementar un programa (en el archivo principal, `main.go` que mencionamos antes) que:
-
-Abra y lea de dos archivos de texto regulares (llamados `archivo1.in` y `archivo2.in`). Cada archivo tendrá varias líneas, donde en cada línea habrá un único número y nada más. En total, este archivo será la representación de un arreglo de números. Por ejemplo, el contenido de `archivo1.in` podría ser:
-
-```
-1
-7
-12
+$ ./dc < oper.txt
 8
 2
 1
-```
-
-Se debe leer cada uno de los archivos, y cargar en memoria los arreglos correspondientes, leyendo cada componente y convertir cada uno de los elementos a `int` (para lo que pueden utilizar la función `Atoi` del módulo `strconv`). Pueden asumir que no van a haber errores en las lecturas, ni letras donde deben haber números, etc…
-
-Una vez obtenidos los arreglos, averiguar el arreglo que sea el mayor entre los dos, y se debe imprimir de forma ordenada. Para esto, utilizar las funciones `Comparar` y `Seleccion` previamente implementadas. Para imprimir, hacerlo en el mismo formato que en el que vienen en los archivos. Es decir, una componente por línea. Si el arreglo más grande fuera `[2, 1, 7, 3]`, habría que imprimir:
-
-```
-1
+16
+-10
+6
+ERROR
+ERROR
+-1
 2
-3
-7
 ```
 
-La compilación (estando ubicados en el directorio principal del módulo) se realiza con el siguiente comando:
+## Funcionamiento
 
-```sh
-go build tp0
-```
+Todas las operaciones trabajarán con números enteros, y devolverán números enteros. Se recomienda usar el tipo de dato de Go `int64` para permitir operaciones de más de 32 bits.
 
-Luego, pueden ejecutar el programa haciendo:
+El conjunto de operadores posibles es: suma (`+`), resta (`-`), multiplicación (`*`), división entera (`/`), raíz cuadrada (`sqrt`), exponenciación (`^`), logaritmo (`log`) en base arbitraria, y operador ternario (`?`).
 
-```sh
-./tp0
-```
+Todos los operadores funcionan con dos operandos, excepto `sqrt` (toma un solo argumento) y el operador ternario (toma tres).
 
-Antes de realizar la entrega, es importante que cualquier archivo entregado cumpla con el formato de Go (en este caso particular, `tp0.go` y `main.go`, pero aplicar para cualquier entrega de aquí en más). Para lograr esto, simplemente deben correr el comando:
+Tal y como se describe en la bibliografía enlazada, cualquier operación aritmética `a op b` se escribe en postfijo como `a b op` (por ejemplo, `3 - 2` se escribe en postfijo como `3 2 -`).
 
-```sh
-go fmt <nombre del archivo>
-```
+Para operaciones con un solo operando, el formato es obviamente `a op` (por ejemplo, `5 sqrt`). Por su parte, para el operador ternario, el ordenamiento de los argumentos seguiría el mismo principio, transformándose `a ? b : c` en `a b c ?`. Este operador ternario devuelve, si `a` es distinto a 0, el valor de `b`, y si es 0 el valor de `c`.
 
-En este caso, `<nombre del archivo>` vendría a ser `tp0.go` (o `ejercicios/tp0.go`, si están parados desde el directorio del tp0, y no desde el de ejercicios).
+Ejemplos (nótese que toda la aritmética es entera, y el resultado siempre se trunca):
 
-La entrega se hará de forma digital subiendo el código a la página de entregas de la materia. Deben entregar un archivo zip con los entregables. Deben entregar un zip con todo el contenido del módulo.
+- `20 11 -` → `20-11 = 9`
+- `20 -3 /` → `20/-3 = -6`
+- `20 10 ^` → `20^10 = 10240000000000`
+- `60 sqrt` → `√60 = 7`
+- `256 4 ^ 2 log` → `log₂(256⁴) = 32`
+- `1 -1 0 ?` → `1 ? -1 : 0 = -1` (funciona como en C)
 
-En caso de encontrarse con dificultades para armar el módulo como es descripto aquí, les dejamos un video explicativo paso a paso para esta entrega.
+## Formato de entrada
+
+Cada línea de la entrada estándar representa una operación en su totalidad (produce un único resultado); y cada una de estas operaciones es independiente de las demás.
+
+Los símbolos en la expresión pueden ser números, u operadores. Todos ellos estarán siempre separados por uno o más espacios; la presencia de múltiples espacios debe tenerse en cuenta a la hora de realizar la separación en tokens.
+
+Nota adicional: puede haber también múltiples espacios al comienzo de la línea, antes del primer token; por otra parte, no necesariamente habrá un espacio entre el último token y el carácter salto de línea que le sigue.
+
+El resultado final de cada operación debe imprimirse en una sola línea por salida estándar (stdout). En caso de error, debe imprimirse —para esa operación— la cadena `ERROR`, también por salida estándar, y sin ningún tipo de resultado parcial. Tras cualquier error en una operación, el programa continuará procesando el resto de líneas con normalidad.
+
+Está permitido, para el cálculo de potencias, raíces y logaritmos, el uso de las funciones de la biblioteca estándar `math`.
+
+## Condiciones de error
+
+El mensaje `ERROR` debe imprimirse como resultado en cualquiera de las siguientes situaciones:
+
+- Cantidad de operandos insuficiente (`1 +`).
+- Al finalizar la evaluación, queda más de un valor resultante. Es decir, no se realizaron suficientes operaciones para terminar que quede un único resultado (por ejemplo `1 2 3 +`, o `+ 2 3 -`).
+
+Errores propios de cada operación matemática, descritos a continuación:
+
+- división por 0
+- raíz de un número negativo
+- base del logaritmo menor a 2
+- argumento del logaritmo menor o igual a 0
+- potencia con exponente negativo
+
+## Criterios de aprobación
+
+El código entregado debe ser claro y legible y ajustarse a las especificaciones de la consigna. Debe compilar sin advertencias y correr sin errores.
+
+La entrega incluye, obligatoriamente, todos los archivos involucrados en la realización del TP (es decir, el módulo del trabajo en sí, que debe llamarse `dc`), así como el módulo `tdas` en caso de haber utilizado al menos alguno de los tipos de datos implementados anteriormente.
+
+La entrega se realiza únicamente en forma digital a través del sistema de entregas, con todos los archivos mencionados en un único archivo ZIP.
