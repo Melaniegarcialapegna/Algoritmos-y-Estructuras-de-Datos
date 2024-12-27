@@ -49,7 +49,7 @@ def recomendacion(grafo, tipo, vertices, cantidad):
         probabilidades[tipo_actual][vertice] = 1
 
     for vertice in vertices:
-        for i in range(500):
+        for i in range(CANT_RANDOM_WALKS):
             random_walk(grafo, vertice, 1, probabilidades, 200, True)
     
     return heapq.nlargest(cantidad, probabilidades[tipo].items(), compararPageRank)
